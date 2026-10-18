@@ -17,3 +17,9 @@ day 3;
 I learn react states and derived data
 demoData.ts through app to chart and summary
 verify the chart and summary data when selecting sensor
+
+day 4:
+learned creating docker compose file and configure postgresql
+desgin controller and service and repo to implement get method
+verified seed file , get api, 404 behavior and unit test
+data is fetch from postgresql to sensorrepository then service then controller then response
