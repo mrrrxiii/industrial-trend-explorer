@@ -609,7 +609,7 @@ npm --prefix frontend run build
 cd backend && ./mvnw test
 ```
 
-Keep behavior tests focused on user-visible outcomes; do not add brittle SVG snapshots. Verify two sensors, 48 readings, two anomaly rows per sensor, correct units/ranges, loading during rapid switching, no AI request before click, and truthful mock/live labeling. Update the README feature description and verification count only with results actually observed. Add a short `LEARNING_LOG.md` entry explaining the visual decisions, then commit with a focused message such as `Day 8: portfolio dashboard polish`.
+Keep behavior tests focused on user-visible outcomes; do not add brittle SVG snapshots. Verify two sensors, 48 readings, two anomaly rows per sensor, correct units/ranges, loading during rapid switching, no AI request before click, and truthful mock/live labeling. Keep the README concise and portfolio-ready: explain the project in plain language, show the technology stack and verified results, and embed a full-page screenshot of the actual dashboard at `docs/screenshots/dashboard-full-page.png`. Update feature descriptions and verification counts only with results actually observed. Add a short `LEARNING_LOG.md` entry explaining the visual decisions, then commit with a focused message such as `Day 8: portfolio dashboard polish`.
 
 **Day 8 acceptance:** The first screen communicates the project purpose, selected sensor, normal range, summary, trend, and anomalies; the chart makes normal versus anomalous readings obvious; the layout works on narrow and wide screens; no backend/API contract changed; lint, frontend tests, frontend build, and backend tests pass.
 
@@ -863,9 +863,11 @@ the lower panels stack on mobile. Keyboard focus and AI-button activation
 are tested, and the user confirmed native sensor selection with arrow keys.
 Frontend lint, all nine frontend tests, the production build, and all seven
 backend tests pass. The frontend bundle-size advisory remains non-blocking.
-The README records only observed results. No commit was created because this
-workspace is not a Git repository. Preserve the Day 8 scope lock and proceed
-one micro-step at a time so I can understand and verify each change.
+The concise portfolio README embeds a full-page screenshot of the dashboard
+from the browser. Documentation records only observed results. No Git commit
+was made because this workspace is not a Git repository. Preserve the Day 8
+scope lock and proceed one micro-step at a time so I can understand and verify
+each change.
 ```
 
 If you understand only one principle this week, make it this: **you control the learning pace; Codex is your pair programmer and teacher, not the person who replaces your understanding.**
