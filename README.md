@@ -65,6 +65,51 @@ npm --prefix frontend run dev
 
 Open the Vite URL shown in the terminal, usually `http://localhost:5173`.
 
+### Run the production-shaped stack locally
+
+Build the same backend and web images used by production, but tag them only for local testing:
+
+```bash
+docker build --tag industrial-trend-api:local backend
+docker build --tag industrial-trend-web:local frontend
+```
+
+Start an isolated HTTP-only stack with unmistakably local credentials and mock explanations:
+
+```bash
+env \
+  APP_VERSION=local \
+  DB_PASSWORD=local_smoke_test_only_not_for_production \
+  SITE_DOMAIN=:80 \
+  LLM_MODE=mock \
+  docker compose \
+    --project-name industrial-trend-local-smoke \
+    --file compose.prod.yaml \
+    --file compose.local.yaml \
+    up --detach
+```
+
+Open `http://127.0.0.1:18080`. The fixed project name keeps its database and Caddy volumes separate from normal development.
+
+**Local smoke test verified (2026-10-18):** Caddy served `/` and both built assets with HTTP 200, forwarded `/api/sensors` to the backend, and returned 3, 13, and 48 readings for 1H, 6H, and 24H. An unsupported `hours=2` returned HTTP 400. The browser rendered the seeded chart and anomalies, and a click produced the `MOCK — NOT AI` label. The database container was healthy. This verifies the local HTTP/container path only; it does not verify public DNS, HTTPS, or capacity on a 2 GB Lightsail instance.
+
+After testing, remove only this explicitly disposable local stack and its synthetic data:
+
+```bash
+env \
+  APP_VERSION=local \
+  DB_PASSWORD=local_smoke_test_only_not_for_production \
+  SITE_DOMAIN=:80 \
+  LLM_MODE=mock \
+  docker compose \
+    --project-name industrial-trend-local-smoke \
+    --file compose.prod.yaml \
+    --file compose.local.yaml \
+    down --volumes
+```
+
+Do not use `down --volumes` for a real deployment.
+
 ## Optional Gemini mode
 
 Mock mode is the default. For live explanations, configure `LLM_MODE=live`, `GOOGLE_API_KEY`, and `GEMINI_MODEL` in the **backend process environment only**. Never put the key in frontend code or commit it. The interface labels responses `MOCK — NOT AI` or `LIVE AI`.

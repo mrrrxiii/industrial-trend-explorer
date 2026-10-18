@@ -1,0 +1,55 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: industrial_trends
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # The Postgres entrypoint runs these scripts only when the data directory is empty.
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    mem_limit: 512m
+
+  backend:
+    image: ghcr.io/mrrrxiii/industrial-trend-api:${APP_VERSION:?APP_VERSION is required}
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/industrial_trends
+      DB_USER: app
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      LLM_MODE: ${LLM_MODE:-mock}
+      JAVA_TOOL_OPTIONS: -Xms128m -Xmx512m
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 900m
+
+  web:
+    image: ghcr.io/mrrrxiii/industrial-trend-web:${APP_VERSION:?APP_VERSION is required}
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:?SITE_DOMAIN is required}
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    mem_limit: 128m
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

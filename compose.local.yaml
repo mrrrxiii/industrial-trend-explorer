@@ -1,0 +1,17 @@
+services:
+  db:
+    restart: "no"
+
+  backend:
+    image: industrial-trend-api:local
+    environment:
+      LLM_MODE: mock
+    restart: "no"
+
+  web:
+    image: industrial-trend-web:local
+    environment:
+      SITE_DOMAIN: ":80"
+    ports: !override
+      - "127.0.0.1:18080:80"
+    restart: "no"
