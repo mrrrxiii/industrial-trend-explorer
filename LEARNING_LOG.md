@@ -40,7 +40,19 @@ Day 6.1–6.3:
 java get the facts and prompt is based on the java class summary with instructions specified. use a mock as configurated  and verified the response in test also with unknow sensor
 
 day 6.4:
-optional Java-side Gemini provider uses GOOGLE_API_KEY and GEMINI_MODEL; mock remains default; the POST returned MOCK; live Gemini is NOT VERIFIED because have no key yet; and production needs usage/cost limits.
+optional Java-side Gemini provider uses GOOGLE_API_KEY and GEMINI_MODEL; mock remains default. Created a private AI Studio key and confirmed nonzero quota for Gemini 2.5 Flash and 3.8 Flash. The 2.5 Flash request returned HTTP 502 before safe provider diagnostics existed. A 3.8 Flash request returned an interaction, but the SDK's `outputText()` accessor was empty and the app returned HTTP 502. Added safe status/step-type logging and a tested fallback that extracts text from typed model-output steps. Two local provider tests and all seven backend tests pass. The successful live verification is recorded under Day 7.4. The key stayed out of the browser and chat; production still needs usage/cost limits.
 
 Day 6.5
-the click-only POST, visible mock label, clearing on sensor change, plain-text rendering for untrusted model output, and live Gemini not verified.
+the click-only POST, visible mock label, clearing on sensor change, and plain-text rendering for untrusted model output; live Gemini was not yet verified at this point.
+
+Day 7.1:
+Added `SensorSelector.test.tsx` with Vitest and React Testing Library. Selecting Pump Pressure calls the parent callback with `pump-pressure`. The test passed, and the frontend production build passed.
+
+Day 7.2:
+Both sensors returned 48 chronological readings with the expected units, averages (reactor ~70.6667 °C; pump 3.59375 bar), and 2 anomalies each. An unknown sensor returned HTTP 404. In mock mode, page load and sensor selection made GET requests only; one button click returned HTTP 200 with `mode: "MOCK"` and the visible `MOCK — NOT AI` label. Switching sensors cleared the prior explanation and made only a trend GET. D5 loading/error/recovery and stale-request cancellation checks had already passed. Two initial live attempts returned HTTP 502; the successful live verification is recorded under Day 7.4.
+
+Day 7.3:
+Created the root `README.md` and a names-only `.env.example`. Followed the startup steps from fresh terminals: Spring started in mock mode, Vite loaded the sensor page, and the PostgreSQL schema/seed steps ran twice without duplicates (48 readings per sensor).
+
+Day 7.4:
+After adding the typed output-step fallback, one real click-triggered request using `gemini-3.8-flash` returned HTTP 200 with `mode: "LIVE"`, the selected `pump-pressure` sensor ID, and non-empty generated text consistent with Java's summary. The UI displayed `LIVE AI`. Gemini live integration is now verified; the backend remains running in live mode at the user's request.

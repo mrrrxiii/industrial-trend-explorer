@@ -116,7 +116,7 @@ backend/target/
 *.log
 ```
 
-**Preflight for live AI:** You will need an API key with API access and sufficient credits/billing. ChatGPT subscriptions and API billing are separate. Never paste a key into chat, source code, or Git. You can finish the application in visibly labeled **MOCK — NOT AI** mode if live access is blocked, but you cannot claim a successful live integration without one real request.
+**Preflight for live Gemini:** The optional live provider uses a Google AI Studio Gemini API key. Free-tier model access and rate limits may be available, but availability and terms change; check the official pricing/data-use pages before making a request. A ChatGPT subscription is unrelated to Gemini API access. Never paste a key into chat, source code, screenshots, or Git. You can finish the application in visibly labeled **MOCK — NOT AI** mode if live access is unavailable, but you cannot claim a successful Gemini integration without one real request returning `mode: "LIVE"`.
 
 ---
 
@@ -499,16 +499,39 @@ After both real sensors work, delete `demoData.ts` and any learning-only imports
 ### [ ] D6.3 · Mock the external service *honestly* (25 min)
 **Learn:** Testing with a fake provider is useful, but the UI must never imply it called a real model. Dependency injection lets Java choose an implementation. **A:** Predict why a silent automatic fallback to mock would be misleading. **B:** Codex adds `ExplanationService` plus `LLM_MODE=mock|live`, and `POST /api/sensors/{sensorId}/explanation` (no body). In mock mode, return deterministic text from current Java stats and `mode: "MOCK"`; unknown ID → 404. **C:** `curl -X POST http://localhost:8080/api/sensors/reactor-temp/explanation` returns mock JSON. **D:** Explain why POST is sensible for an action that requests generated output.
 
-### [ ] D6.4 · Make one live provider request (35 min)
-**Learn:** An **SDK** is a language-specific library for an external service. The API call is server-to-server. Credentials, usage costs, failures, and timeout require handling.
+### [ ] D6.4 · Add and verify the optional Gemini provider (35 min)
+**Learn:** An **SDK** is a language-specific library for an external service. The browser calls Spring; only Spring calls Gemini. Credentials, quotas/costs, timeouts, and provider failures need explicit handling.
 
-**A:** Predict where an API key would be visible if included in React code. **B:** This tutorial uses Gemini as its optional live provider. Codex checks the latest **official Google GenAI Java SDK** documentation and adds the supported `com.google.genai:google-genai` Maven dependency; use the documented API supported by that SDK. The SDK reads `GOOGLE_API_KEY` from the backend environment. Keep the model configurable with `GEMINI_MODEL` and confirm a model currently available to your Google AI Studio project; do not guess an ID. In your backend terminal set environment variables *privately* before starting Java, including `LLM_MODE=live`. (Ask Codex how to set variables without echoing them; do not paste the values into chat.) Code must set timeouts, return a generic non-2xx error on provider failures and avoid logging secrets. No automatic mock fallback.
+**A:** Predict where a Gemini key would be visible if it were placed in React code. It would be included in browser-delivered code or requests and could be inspected in DevTools; therefore, the browser must never receive it.
 
-Google's free tier has limited model access and rate limits; availability and terms can change. Free-tier content may be used to improve Google's products, so send **only this project's synthetic readings**, never real or confidential data. Keep `LLM_MODE=mock` as the default so the public portfolio project works without credentials. Never commit or publish an API key.
+**B1 · Add the Java SDK:** Check the current official Google GenAI Java SDK documentation for its supported Java version, Maven coordinates, API examples, timeout options, and error types. Add the documented `com.google.genai:google-genai` dependency to `backend/pom.xml`. Do not copy an old or unrelated SDK example. The SDK version is deliberately not frozen in this guide; use a compatible release verified on implementation day.
 
-**C:** Perform **one** intentional low-cost button/API call. Success returns `mode: "LIVE"` and generated text. If your account/key/billing is unavailable, keep mock mode and record **LIVE NOT VERIFIED** in README. An invalid-key test must show an error, not fake success. **D:** Explain what part of this project makes it an *LLM application* and what **does not** qualify as production generative-AI infrastructure.
+**B2 · Keep the provider behind the existing interface:** Implement a Gemini provider for the existing `ExplanationProvider` contract. It should be created only when `LLM_MODE=live`; the deterministic mock provider remains active by default when `LLM_MODE` is absent or `mock`. In the Gemini provider, read `GOOGLE_API_KEY` and `GEMINI_MODEL` from the backend environment/configuration, reject missing values clearly, construct the documented Gemini request from the bounded Java prompt, and return only generated text. Configure a finite request timeout. Extract text from the documented response, including typed model-output steps if the convenience text field is absent. Map provider/auth/quota/network failures to a generic non-2xx response (for example HTTP 502). Log only safe diagnostic metadata such as the provider HTTP status/category or I/O exception type—never the key, prompt, or raw provider error message. **Never fall back to mock** after a live request fails. Only report `mode: "LIVE"` after a successful real provider response with non-empty text.
 
-Current official references: https://github.com/googleapis/java-genai and https://ai.google.dev/gemini-api/docs/get-started?lang=java. Check current examples and Java compatibility on implementation day. Configure the model instead of hard-coding an ID that may not be available to the account.
+**B3 · Obtain/configure credentials privately:** Create a key in Google AI Studio using its official key page. Each key belongs to a Google Cloud project. Choose the AI Studio **Default Gemini Project** for a personal test, or import a personal project you control; “Import project” is for an existing Google Cloud project, and do not use a workplace/shared project without permission. Review the current free-tier rate limits and data-use terms first. Select a stable text model shown as available to that account; set its exact API model ID in `GEMINI_MODEL` rather than guessing. Keep `LLM_MODE=mock` for normal work and GitHub visitors. For the single live check, stop any existing backend with Ctrl+C. In a **Bash** terminal at the repository root, enter `cd backend` (skip this if already in `backend`). Then run this single line by itself; do not paste the startup commands at the same time:
+
+```bash
+read -rsp "Gemini API key (input is hidden): " GOOGLE_API_KEY; printf '\n'
+```
+
+When the hidden prompt appears, type/paste the key directly into the terminal and press Enter. The input is not echoed or stored in shell command history. After the shell prompt returns, run:
+
+```bash
+export GOOGLE_API_KEY
+export LLM_MODE=live
+export GEMINI_MODEL='gemini-3.8-flash'
+./mvnw spring-boot:run
+```
+
+Do not put the key in React, `application.properties`, a tracked `.env`, a screenshot, or a Git commit, and never paste it into chat. After the single check, stop the server with Ctrl+C and run `unset GOOGLE_API_KEY LLM_MODE GEMINI_MODEL`; a fresh backend terminal then uses the mock default. Never use real or confidential sensor data: Google's free-tier content may be used to improve its products.
+
+**C · Verify the real integration:** With the backend running in live mode and the frontend/backend/database already working, click **Explain with AI exactly once**. Confirm the browser sends one POST to `/api/sensors/{sensorId}/explanation`, the Java process makes the provider request, and a successful response contains the selected `sensorId`, non-empty generated text, and `mode: "LIVE"`. Confirm no key appears in the browser Network tab or logs. This single successful call is what proves the Gemini integration works. If the key, quota, model access, billing, or network is unavailable, do **not** claim success: restore explicit mock mode, record **Gemini LIVE NOT VERIFIED** in the README and learning log, and stop rather than repeatedly retrying.
+
+**Negative check:** If you deliberately test invalid credentials, make at most one request. It must return a visible non-2xx error and must not return `mode: "MOCK"` as though the live call succeeded. Do not expose the key while testing.
+
+**D:** Explain why the backend call is an LLM integration, why Java remains the source of truth for statistics, and which production concerns (for example authentication, quotas/cost limits, monitoring, and data governance) this small portfolio demo does not solve.
+
+Official references to re-check on implementation day: Google GenAI Java SDK https://github.com/googleapis/java-genai ; Gemini Java getting started https://ai.google.dev/gemini-api/docs/get-started?lang=java ; API key page https://aistudio.google.com/api-keys ; pricing and data-use terms https://ai.google.dev/gemini-api/docs/pricing .
 
 ### [ ] D6.5 · React button, pending state, plain text (30 min)
 **Learn:** A **user click** triggers this POST; a boolean pending state disables the button while work runs. LLM output is untrusted text and must not be inserted as HTML.
@@ -529,7 +552,7 @@ Run both builds/tests. Check DevTools Network contains **no key**. Ensure `.env`
 **Learn:** End-to-end checking here means verifying the complete request manually, not installing a huge browser testing suite. **B:** Verify: two sensor options; 48 chronological readings each; correct unit; temperature avg ~70.6667; pressure avg 3.59375; 2 anomalies each; loading/error/recovery; quick switching; no LLM before click; mock/live labels; no browser key; Java 404 on unknown sensor; backend tests passing. **C:** Write observed results into `LEARNING_LOG.md`; do not mark anything tested that you did not actually execute. **D:** Explain which layer is responsible for each failure.
 
 ### [ ] D7.3 · README that a stranger could follow (20 min)
-**Learn:** Reproducibility matters more than polished screenshots. **B:** Codex writes `README.md` using only **verified** prerequisites, install commands, compose startup, SQL seed, Java/React terminal commands, endpoints, ports, mock/live env variables, tests, known limitations, and stop commands. Include a `.env.example` with **names only** and no secrets. **C:** Follow README from a fresh terminal without relying on Codex memory. **D:** Explain how to restart all components.
+**Learn:** Reproducibility matters more than polished screenshots. **B:** Codex writes `README.md` using only **verified** prerequisites, install commands, compose startup, SQL seed, Java/React terminal commands, endpoints, ports, mock/live env variables, tests, known limitations, and stop commands. Document `LLM_MODE=mock|live`, `GOOGLE_API_KEY`, and `GEMINI_MODEL`; clearly say whether a real Gemini call was actually tested. Include a `.env.example` with **names only** and no secrets—never an actual key. **C:** Follow README from a fresh terminal without relying on Codex memory. **D:** Explain how to restart all components.
 
 ### [ ] D7.4 · Two-minute demo and teach-back (30 min)
 **Without Codex**: show selecting Reactor → chart/48 values → two anomalies → explanation button; switch to Pump; then explain:
@@ -664,7 +687,8 @@ industrial-trend-explorer/
   backend/
     pom.xml
     mvnw
-    src/main/java/...  (controller, service, repository, records, LLM)
+    src/main/java/...  (controller, service, repository, records, prompt,
+                         ExplanationProvider, mock provider, optional Gemini provider)
     src/main/resources/application.properties
     src/test/java/...
   frontend/
@@ -695,10 +719,11 @@ Your learning-only `sensors.ts`, `demoData.ts`, and `public/basics.html` may exi
 - [ ] React displays two selectable sensors, charts, summary and anomaly list from Java JSON.
 - [ ] Normal/loading/empty/error UI paths checked; stale requests not shown.
 - [ ] Clicking Explain sends a POST; switching sensor clears prior explanation.
-- [ ] Real AI key never appears in frontend or committed files.
-- [ ] Mock says `MOCK — NOT AI`; live says `LIVE AI` only after real success.
+- [ ] `GOOGLE_API_KEY` never appears in frontend, browser requests/logs, screenshots, or committed files.
+- [ ] Mock says `MOCK — NOT AI`; Gemini says `LIVE AI` only after a real successful Gemini response.
+- [ ] Gemini live status is recorded truthfully: **VERIFIED** only after an actual POST returns non-empty generated text with `mode: "LIVE"`; otherwise **NOT VERIFIED**, with the reason documented.
 - [ ] Backend tests, one React behavior test and TypeScript production build pass.
-- [ ] At least one genuine LLM call tested **if** account/API access is available; otherwise recorded honestly as unverified.
+- [ ] At least one genuine Gemini API call tested **if** account/model access is available; otherwise Gemini is explicitly recorded as unverified (never infer live success from mock output or compilation).
 - [ ] Can do a 2-minute demo and explain all components without Codex.
 
 ---
@@ -758,17 +783,23 @@ Concepts to **discuss, not build**: routing, frontend testing pyramid, accessibi
 
 ---
 
-# Exactly what to send Codex first
+# Tutor prompt for your current checkpoint
 
 ```text
-I am a Java developer with no HTML, CSS, JavaScript, Node.js, npm,
-TypeScript, React, or LLM API experience. Read
-Industrial_Trend_Explorer_Absolute_Beginner_Codex_Guide_v2.md completely.
-Use its tutor contract, seven-day plan, fixed contracts, and small scope.
-Do not implement several steps at once. Begin with D1.1 micro-step A only.
-Teach the words and syntax first, show a tiny example, ask me to predict,
-and WAIT for my reply before editing or proceeding. Do not claim success
-without running a real check. Ask me to explain my own code at the end.
+Read Industrial_Trend_Explorer_Absolute_Beginner_Codex_Guide_v2.md
+completely. I am a Java developer working through D7.4. The selector
+behavior test, frontend build, seven backend tests, and root README startup
+check pass. Both sensors returned 48 chronological readings, expected
+units/averages, and 2 anomalies; unknown sensor returned 404. Mock mode
+shows `MOCK — NOT AI` and makes no explanation request until click. A live
+request using `gemini-3.8-flash` has now succeeded: the POST returned HTTP
+200 with non-empty text, `mode: "LIVE"`, and the selected sensor ID; the UI
+showed `LIVE AI`. The provider uses typed model-output-step text extraction
+when the SDK's `outputText()` convenience field is empty. Gemini live is
+verified. Keep the API key private; the backend is currently running in
+live mode because I chose to keep it running. Do not expose or ask me to
+paste the key. Continue D7.4 one teach-back item at a time and ask me to
+explain my own code.
 ```
 
 If you understand only one principle this week, make it this: **you control the learning pace; Codex is your pair programmer and teacher, not the person who replaces your understanding.**
