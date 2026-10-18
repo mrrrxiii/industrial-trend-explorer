@@ -14,7 +14,7 @@
 
 ## Overview
 
-Choose a sensor to see its 24-hour trend, normal operating range, summary statistics, and readings flagged as anomalies. Request an explanation only when needed.
+Choose a sensor and time range to see its trend, normal operating range, summary statistics, and readings flagged as anomalies. Request an explanation only when needed.
 
 - **Two sensors:** Reactor Temperature and Pump Pressure
 - **Analytics:** Java calculates summary statistics and flags anomalies
@@ -27,6 +27,17 @@ Choose a sensor to see its 24-hour trend, normal operating range, summary statis
 **Dashboard → Spring Boot API → PostgreSQL**
 
 Java returns sensor readings and calculated summaries to the dashboard. The optional explanation request is sent only when a user clicks the button. The API key, when Gemini is enabled, stays on the backend.
+
+## Time-range analytics
+
+Choose **1H**, **6H**, or **24H**. The selected sensor's latest stored reading anchors the time window; its start and end are both included. Spring Boot accepts only those three values, PostgreSQL returns readings in the selected window, and Java recalculates the summary and anomalies before React updates the chart and table. The same range is used if the user requests an explanation.
+
+```text
+React selection → REST request (`hours`) → Spring Boot validation
+→ PostgreSQL time window → Java analytics → updated dashboard
+```
+
+The explanation service builds a prompt from the filtered Java results. The Gemini provider sends that prompt to the model; it does not calculate the range or analytics. Trend and explanation requests accept `hours=1`, `hours=6`, or `hours=24` (default `24`); unsupported ranges return HTTP 400.
 
 ## Run locally
 
@@ -64,11 +75,13 @@ A real Gemini request was verified with HTTP `200` and a non-empty response. Mod
 
 | Check | Result |
 | --- | --- |
-| Backend tests | 7 passed |
-| Frontend tests | 9 passed |
+| Backend tests | 13 passed |
+| Frontend tests | 14 passed |
 | Frontend lint and production build | Passed |
 | Seeded API data | 2 sensors, 48 readings and 2 anomalies per sensor |
-| Responsive page | Checked at 375, 768, and desktop widths |
+| Time-range browser check | 1H, 6H, and 24H selection and updates checked with mocked API responses |
+| Time-range API smoke check | Updated backend returned 3, 13, and 48 readings for 1H, 6H, and 24H; `hours=2` returned HTTP 400 |
+| Responsive page | Checked at 375, 768, and 1280 pixels with no horizontal overflow |
 
 Run the checks with:
 

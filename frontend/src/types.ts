@@ -8,6 +8,8 @@ export type Sensor = {
 
 export type Reading = { timestamp: string; value: number; anomaly: boolean };
 
+export type TimeRangeHours = 1 | 6 | 24;
+
 export type Summary = {
     count: number;
     min: number | null;
@@ -22,6 +24,7 @@ export type TrendResponse = {
     sensor: Sensor;
     readings: Reading[];
     summary: Summary;
+    hours: TimeRangeHours;
 };
 
 export type Explanation = {

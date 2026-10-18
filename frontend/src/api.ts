@@ -1,4 +1,4 @@
-import type { Explanation, Reading, Sensor, Summary, TrendResponse } from './types';
+import type { Explanation, Reading, Sensor, Summary, TimeRangeHours, TrendResponse } from './types';
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -14,6 +14,10 @@ function isNullableNumber(value: unknown): value is number | null {
 
 function isNullableString(value: unknown): value is string | null {
   return value === null || typeof value === 'string';
+}
+
+function isTimeRangeHours(value: unknown): value is TimeRangeHours {
+  return value === 1 || value === 6 || value === 24;
 }
 
 function isSensor(value: unknown): value is Sensor {
@@ -43,12 +47,14 @@ function isSummary(value: unknown): value is Summary {
     && isNullableString(value.lastTimestamp);
 }
 
-function isTrendResponse(value: unknown): value is TrendResponse {
+function isTrendResponse(value: unknown, expectedHours: TimeRangeHours): value is TrendResponse {
   return isObject(value)
     && isSensor(value.sensor)
     && Array.isArray(value.readings)
     && value.readings.every(isReading)
-    && isSummary(value.summary);
+    && isSummary(value.summary)
+    && isTimeRangeHours(value.hours)
+    && value.hours === expectedHours;
 }
 
 async function requireSuccessfulJson(response: Response): Promise<unknown> {
@@ -68,11 +74,18 @@ export async function getSensors(): Promise<Sensor[]> {
   return data;
 }
 
-export async function getTrend(id: string, signal: AbortSignal): Promise<TrendResponse> {
-  const response = await fetch(`/api/sensors/${encodeURIComponent(id)}/trend`, { signal });
+export async function getTrend(
+  id: string,
+  hours: TimeRangeHours,
+  signal: AbortSignal,
+): Promise<TrendResponse> {
+  const response = await fetch(
+    `/api/sensors/${encodeURIComponent(id)}/trend?hours=${hours}`,
+    { signal },
+  );
   const data = await requireSuccessfulJson(response);
 
-  if (!isTrendResponse(data)) {
+  if (!isTrendResponse(data, hours)) {
     throw new Error('Invalid trend response');
   }
   return data;
@@ -85,10 +98,13 @@ function isExplanation(value: unknown): value is Explanation {
     && (value.mode === 'LIVE' || value.mode === 'MOCK');
 }
 
-export async function getExplanation(id: string): Promise<Explanation> {
-  const response = await fetch(`/api/sensors/${encodeURIComponent(id)}/explanation`, {
-    method: 'POST',
-  });
+export async function getExplanation(id: string, hours: TimeRangeHours): Promise<Explanation> {
+  const response = await fetch(
+    `/api/sensors/${encodeURIComponent(id)}/explanation?hours=${hours}`,
+    {
+      method: 'POST',
+    },
+  );
   const data = await requireSuccessfulJson(response);
 
   if (!isExplanation(data)) {

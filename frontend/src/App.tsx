@@ -3,16 +3,18 @@ import { SensorSelector } from './components/SensorSelector';
 import { TrendChart } from './components/TrendChart';
 import { useEffect, useState } from 'react';
 import { getSensors, getTrend } from './api';
-import type { Sensor, TrendResponse } from './types';
+import type { Sensor, TimeRangeHours, TrendResponse } from './types';
 import { SummaryCards } from './components/SummaryCards';
 import { AiExplanation } from './components/AiExplanation';
 import { AnomalyList } from './components/AnomalyList';
+import { TimeRangeSelector } from './components/TimeRangeSelector';
 
 type LoadStatus = 'loading' | 'empty' | 'error' | 'success';
 
 function App() {
   const [sensors, setSensors] = useState<Sensor[]>([]);
   const [selectedSensorId, setSelectedSensorId] = useState('');
+  const [timeRangeHours, setTimeRangeHours] = useState<TimeRangeHours>(24);
   const [sensorError, setSensorError] = useState<string | null>(null);
   const [trend, setTrend] = useState<TrendResponse | null>(null);
   const [status, setStatus] = useState<LoadStatus>('loading');
@@ -25,6 +27,13 @@ function App() {
     setTrend(null);
     setTrendError(null);
     setSelectedSensorId(id);
+  }
+
+  function handleTimeRangeChange(hours: TimeRangeHours) {
+    setStatus('loading');
+    setTrend(null);
+    setTrendError(null);
+    setTimeRangeHours(hours);
   }
 
   useEffect(() => {
@@ -44,7 +53,7 @@ function App() {
 
     const controller = new AbortController();
 
-    getTrend(selectedSensorId, controller.signal)
+    getTrend(selectedSensorId, timeRangeHours, controller.signal)
       .then(data => {
         if (controller.signal.aborted) return;
         setTrend(data);
@@ -57,7 +66,7 @@ function App() {
       });
 
     return () => controller.abort();
-  }, [selectedSensorId]);
+  }, [selectedSensorId, timeRangeHours]);
 
   return (
     <div className="app-shell">
@@ -89,9 +98,13 @@ function App() {
               selectedId={selectedSensorId}
               onChange={handleSensorChange}
             />
+            <TimeRangeSelector
+              value={timeRangeHours}
+              onChange={handleTimeRangeChange}
+            />
           </section>
           {status === 'loading' && <p className="panel status-message">Loading trend...</p>}
-          {status === 'empty' && <p className="panel status-message">No readings for this sensor.</p>}
+          {status === 'empty' && <p className="panel status-message">No readings available for the selected time range.</p>}
           {status === 'error' && (
             <p className="panel status-message status-message--error" role="alert">Unable to load trend: {trendError}</p>
           )}
@@ -100,6 +113,7 @@ function App() {
               <SummaryCards summary={trend.summary} unit={trend.sensor.unit} />
               <TrendChart
                 readings={trend.readings}
+                hours={timeRangeHours}
                 unit={trend.sensor.unit}
                 sensorName={trend.sensor.name}
                 normalMin={trend.sensor.normalMin}
@@ -112,7 +126,11 @@ function App() {
                   normalMin={trend.sensor.normalMin}
                   normalMax={trend.sensor.normalMax}
                 />
-                <AiExplanation key={selectedSensorId} sensorId={selectedSensorId} />
+                <AiExplanation
+                  key={`${selectedSensorId}-${timeRangeHours}`}
+                  sensorId={selectedSensorId}
+                  hours={timeRangeHours}
+                />
               </div>
             </>
           )}

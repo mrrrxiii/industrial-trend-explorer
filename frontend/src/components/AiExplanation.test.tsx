@@ -24,7 +24,7 @@ it('requests an explanation only after clicking and renders returned text safely
         mode: 'MOCK',
     });
 
-    render(<AiExplanation sensorId="reactor-temp" />);
+    render(<AiExplanation sensorId="reactor-temp" hours={24} />);
 
     expect(getExplanation).not.toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: 'Explain with AI' }));
@@ -32,6 +32,7 @@ it('requests an explanation only after clicking and renders returned text safely
     expect(await screen.findByText(text)).toBeTruthy();
     expect(screen.getByText('MOCK — NOT AI')).toBeTruthy();
     expect(document.querySelector('.ai-result b')).toBeNull();
+    expect(getExplanation).toHaveBeenCalledWith('reactor-temp', 24);
     expect(getExplanation).toHaveBeenCalledTimes(1);
 });
 
@@ -43,7 +44,7 @@ it('supports keyboard focus and activation', async () => {
         mode: 'MOCK',
     });
 
-    render(<AiExplanation sensorId="reactor-temp" />);
+    render(<AiExplanation sensorId="reactor-temp" hours={24} />);
 
     await user.tab();
     const button = screen.getByRole('button', { name: 'Explain with AI' });
@@ -62,7 +63,7 @@ it('shows a pending status while the explanation is being generated', async () =
         resolveExplanation = resolve;
     }));
 
-    render(<AiExplanation sensorId="pump-pressure" />);
+    render(<AiExplanation sensorId="pump-pressure" hours={6} />);
 
     await user.click(screen.getByRole('button', { name: 'Explain with AI' }));
     expect(screen.getByRole('status').textContent).toContain('Waiting for the explanation provider');
@@ -80,7 +81,7 @@ it('announces provider failures without displaying a successful result', async (
     const user = userEvent.setup();
     vi.mocked(getExplanation).mockRejectedValue(new Error('Request failed with status 502'));
 
-    render(<AiExplanation sensorId="reactor-temp" />);
+    render(<AiExplanation sensorId="reactor-temp" hours={24} />);
     await user.click(screen.getByRole('button', { name: 'Explain with AI' }));
 
     expect((await screen.findByRole('alert')).textContent).toContain('Request failed with status 502');

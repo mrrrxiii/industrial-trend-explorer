@@ -14,7 +14,11 @@ public class ExplanationService {
     }
 
     public ExplanationResponse explain(String sensorId) {
-        TrendResponse trend = sensorService.getTrend(sensorId);
+        return explain(sensorId, 24);
+    }
+
+    public ExplanationResponse explain(String sensorId, int hours) {
+        TrendResponse trend = sensorService.getTrend(sensorId, hours);
         String prompt = ExplanationPrompt.from(trend);
         String text = provider.generate(trend, prompt);
         return new ExplanationResponse(trend.sensor().id(), text, provider.mode());

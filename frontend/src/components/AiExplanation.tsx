@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { getExplanation } from '../api';
-import type { Explanation } from '../types';
+import type { Explanation, TimeRangeHours } from '../types';
 
-type Props = { sensorId: string };
+type Props = { sensorId: string; hours: TimeRangeHours };
 
-export function AiExplanation({ sensorId }: Props) {
+export function AiExplanation({ sensorId, hours }: Props) {
     const [pending, setPending] = useState(false);
     const [explanation, setExplanation] = useState<Explanation | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -14,7 +14,7 @@ export function AiExplanation({ sensorId }: Props) {
         setExplanation(null);
         setError(null);
         try {
-            setExplanation(await getExplanation(sensorId));
+            setExplanation(await getExplanation(sensorId, hours));
         } catch (requestError) {
             setError(requestError instanceof Error ? requestError.message : 'Unable to generate explanation');
         } finally {

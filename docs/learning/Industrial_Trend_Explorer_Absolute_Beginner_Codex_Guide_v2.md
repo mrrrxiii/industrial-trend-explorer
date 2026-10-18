@@ -5,7 +5,7 @@
 
 > **The promise:** A small, working, locally running application that *you understand*. Not a large AI-generated codebase. The plan is about **2–3 focused hours per day**, approximately **18–21 hours over seven days**, if your computer is ready. It is a target, not a guarantee: installation, API access, and your learning pace can require more time. Do not skip understanding checks to hit a clock.
 
-**What it does:** Select Reactor Temperature or Pump Pressure → see 48 synthetic measurements on a chart → see calculated statistics and out-of-range measurements → press a button to request a **grounded LLM explanation**. Java computes numbers. React presents them. PostgreSQL stores them. The LLM explains *existing facts* and does not diagnose equipment.
+**What it does:** Select Reactor Temperature or Pump Pressure and a **1H**, **6H**, or **24H** window → see matching synthetic measurements on a chart → see calculated statistics and out-of-range measurements → optionally press a button to request a **grounded LLM explanation** for that same window. Java computes numbers. React presents them. PostgreSQL stores them. The LLM explains *existing facts* and does not diagnose equipment.
 
 **This is a personal educational demo, not a Seeq product, not live industrial data, and not evidence of professional React expertise.** Display `SIMULATED DATA — NOT LIVE INDUSTRIAL DATA` on the page.
 
@@ -15,7 +15,9 @@
 
 ## A. What you will see at the end
 
-A single page with a heading, a sensor dropdown, a simple line chart, five statistics (count, minimum, maximum, average, anomaly count), an anomaly list, and an **Explain with AI** button. Two sensors only. **No** login, mobile app, real sensors, Kafka, streaming, cloud hosting, RAG, vector database, agents, routing, or animation.
+A single page with a heading, a sensor dropdown, **1H/6H/24H range buttons**, a line chart, five statistics (count, minimum, maximum, average, anomaly count), an anomaly table, and an **Explain with AI** button. Two sensors only. **No** login, mobile app, real sensors, Kafka, streaming, cloud hosting, RAG, vector database, agents, routing, or animation.
+
+The original seven-day lessons build the core application. Time-range analytics is a small completed extension: the selected range filters backend readings and is also included when requesting an explanation.
 
 **A successful week:** the app works locally, the code builds, the API key is private, the README reproduces the setup, and you can explain a data request from browser to PostgreSQL and back without asking Codex.
 
@@ -39,12 +41,13 @@ A single page with a heading, a sensor dropdown, a simple line chart, five stati
 ```text
 You click a browser button
   ↓ React / TypeScript (browser, local Vite server on port 5173)
-  ↓ HTTP request to /api/... (Vite development proxy)
+  ↓ HTTP request to /api/... (Vite development proxy; trend includes ?hours=1|6|24)
   ↓ Spring Boot Java API (port 8080)
-  ↓ JdbcClient → PostgreSQL (host port 55432)
-  ↑ JSON response → React displays chart and numbers
+  ↓ JdbcClient → PostgreSQL (host port 55432; selected window)
+  ↑ JSON response → Java analytics → React displays chart and numbers
 
-Only after clicking "Explain": Java calls an LLM service.
+Only after clicking "Explain": Java builds a prompt from the selected-window results
+and calls an LLM service with that prompt.
 The browser NEVER gets an LLM API key.
 ```
 
@@ -131,6 +134,8 @@ backend/target/
 | 5 | Fetch, async/await, useEffect, errors | React connected to Spring/PostgreSQL | 2.5–3 h |
 | 6 | LLM idea, prompt, mock, real API, button | Explicitly labeled explanation, safe API key | 2.5–3 h |
 | 7 | One frontend test, final checks, README, demo | Reproducible project you can explain | 2 h |
+
+The selectable time window described above was added after the original seven-day lessons. Treat it as a completed extension, not a requirement to rush through the beginner exercises.
 
 **First priority:** one correct, teachable happy path. **Last priority:** decorative styling. If behind schedule, use the cut list at the end rather than adding hours of complexity or skipping understanding.
 
@@ -613,6 +618,18 @@ Keep behavior tests focused on user-visible outcomes; do not add brittle SVG sna
 
 **Day 8 acceptance:** The first screen communicates the project purpose, selected sensor, normal range, summary, trend, and anomalies; the chart makes normal versus anomalous readings obvious; the layout works on narrow and wide screens; no backend/API contract changed; lint, frontend tests, frontend build, and backend tests pass.
 
+## Completed extension (after Day 8): selectable time range
+
+The dashboard now supports **1H**, **6H**, and **24H**. This is an end-to-end feature using the existing stack and sensor endpoints, not a new chart calculation or LLM feature.
+
+1. **React state:** `TimeRangeHours` is the TypeScript union `1 | 6 | 24`; the page starts at 24 hours. Selecting another button clears the old trend, shows the loading state, and fetches the trend again.
+2. **Trend request:** React sends `GET /api/sensors/{sensorId}/trend?hours=6` (example). The backend defaults an omitted `hours` to 24 and rejects values other than 1, 6, or 24 with HTTP 400.
+3. **Database window:** Java gets the sensor's latest stored timestamp and reads inclusively from `latest timestamp - hours` through that latest timestamp. This anchors the window to available data, which is important for the fixed 2026 seed dataset.
+4. **Java analytics:** The service applies anomaly classification and calculates the summary from only the filtered rows. With the seeded half-hour interval, 1H returns 3 readings, 6H returns 13, and 24H returns all 48.
+5. **Explanation request:** `POST /api/sensors/{sensorId}/explanation?hours=6` accepts the same range. `ExplanationService` loads that window and `ExplanationPrompt` supplies its facts and duration to the provider. `GeminiExplanationProvider` only sends the supplied prompt to Gemini; it has no need to duplicate range selection or analytics logic.
+
+The browser checks for all three selections used mocked API responses to verify the frontend updates. Backend tests cover request validation and time-window calculations. Do not describe these mocked browser checks as live HTTP verification against the updated backend.
+
 ---
 
 # Reference contracts (Codex must follow these exactly)
@@ -679,7 +696,9 @@ Real response is an array of **two** elements, with this shape:
 
 ### `GET /api/sensors/{sensorId}/trend`
 
-Example abbreviates readings to one; the real array contains all 48 sorted readings:
+Add `?hours=1`, `?hours=6`, or `?hours=24` to select the time window. Omitting the parameter defaults to `24`. Any other value returns HTTP 400. The window is inclusive and anchored to that sensor's latest stored timestamp, not the computer's current time; this keeps the fixed 2026 seed data useful. For the seeded half-hour readings, 1H returns 3 rows, 6H returns 13, and 24H returns all 48.
+
+Example below uses the default 24-hour window and abbreviates readings to one:
 
 ```json
 {
@@ -693,7 +712,8 @@ Example abbreviates readings to one; the real array contains all 48 sorted readi
     "avg": 70.66666666666667, "anomalyCount": 2,
     "firstTimestamp": "2026-10-01T00:00:00Z",
     "lastTimestamp": "2026-10-01T23:30:00Z"
-  }
+  },
+  "hours": 24
 }
 ```
 
@@ -701,7 +721,7 @@ Unknown sensor → HTTP 404. Known sensor with no measurements → `readings: []
 
 ### `POST /api/sensors/{sensorId}/explanation`
 
-No request body. Java reloads authoritative stats and selected anomalies, creates grounded prompt, and returns:
+No request body. The optional `hours` query parameter accepts `1`, `6`, or `24` and defaults to `24`, just like the trend request. Java reloads authoritative stats and anomalies for that window, creates a grounded prompt, and returns:
 
 ```json
 { "sensorId": "reactor-temp",
@@ -710,6 +730,8 @@ No request body. Java reloads authoritative stats and selected anomalies, create
 ```
 
 `mode` is **exactly** `LIVE` after a successful genuine provider call or `MOCK` for the explicit deterministic mock. Live provider failures return a non-2xx response, **never silently pretend** a mock is live. Render LLM text as text, not HTML.
+
+**Why the Gemini provider does not need separate range logic:** the controller passes `hours` to `ExplanationService`; that service fetches the matching `TrendResponse` and creates the prompt. `GeminiExplanationProvider` sends the supplied prompt to Gemini. It should not re-query readings or calculate statistics itself.
 
 ## R4. Repository layout at completion
 
@@ -758,13 +780,16 @@ Your learning-only `sensors.ts`, `demoData.ts`, and `public/basics.html` may exi
 - [ ] PostgreSQL container starts; seed run twice still 48 + 48.
 - [ ] Java has both working GET endpoints and appropriate 404/empty behavior.
 - [ ] Java calculates stats (not an LLM); correct 2 anomalies per sensor.
+- [ ] Trend requests support only `hours=1`, `hours=6`, or `hours=24`; unsupported values return HTTP 400. Summary and anomalies match the returned rows.
+- [ ] Explanation requests use the same selected range and only occur after the user clicks.
 - [ ] React displays two selectable sensors, charts, summary and anomaly list from Java JSON.
+- [ ] React defaults to 24H; selecting 1H, 6H, or 24H reloads the matching trend and updates the chart caption.
 - [ ] Normal/loading/empty/error UI paths checked; stale requests not shown.
 - [ ] Clicking Explain sends a POST; switching sensor clears prior explanation.
 - [ ] `GOOGLE_API_KEY` never appears in frontend, browser requests/logs, screenshots, or committed files.
 - [ ] Mock says `MOCK — NOT AI`; Gemini says `LIVE AI` only after a real successful Gemini response.
 - [ ] Gemini live status is recorded truthfully: **VERIFIED** only after an actual POST returns non-empty generated text with `mode: "LIVE"`; otherwise **NOT VERIFIED**, with the reason documented.
-- [ ] Backend tests, one React behavior test and TypeScript production build pass.
+- [ ] Backend and frontend tests, frontend lint and TypeScript production build pass.
 - [ ] At least one genuine Gemini API call tested **if** account/model access is available; otherwise Gemini is explicitly recorded as unverified (never infer live success from mock output or compilation).
 - [ ] Can do a 2-minute demo and explain all components without Codex.
 
@@ -829,53 +854,36 @@ Concepts to **discuss, not build**: routing, frontend testing pyramid, accessibi
 
 ```text
 Read docs/learning/Industrial_Trend_Explorer_Absolute_Beginner_Codex_Guide_v2.md
-completely. I have five years of Java backend experience and have completed
-D7.4. This project supplements that background with a hands-on
-React/TypeScript and server-side Gemini example; present it as a small
-synthetic-data demo, not as professional Seeq or production-scale industrial
-experience.
+completely. The original seven-day beginner lessons and Day 8 dashboard
+polish are complete. This is a small synthetic-data demo; do not describe it
+as a Seeq product, a production monitoring system, or live industrial data.
 
-The final project review is complete. Seven backend tests, three frontend
-behavior tests, frontend ESLint, the TypeScript/Vite production build, and
-the root README startup check pass. The React UI displays the Java-provided
-chart, summary, and anomaly list. Changing sensors immediately clears the
-old trend, shows a loading state, aborts the obsolete request, and rejects
-responses that do not match the current selection. Exact Node, npm, Java,
-Docker, Docker Compose, and Git versions are recorded in the README. The
-temporary learning data, page, and unused Vite scaffold files were removed.
+Current verification: 13 backend tests and 14 frontend tests pass; frontend
+ESLint and the TypeScript/Vite production build pass. The build emits a
+non-blocking bundle-size advisory. Browser checks used mocked API responses
+to confirm the default 24H selection and 6H/1H changes update reading counts,
+anomaly rows, and chart captions. Layout checks at 375, 768, and 1280 pixels
+found no horizontal page overflow. After restarting the stale backend with
+its existing environment preserved, HTTP smoke checks against the updated
+backend returned 3, 13, and 48 readings for 1H, 6H, and 24H; `hours=2`
+returned HTTP 400. The browser then loaded the 24H response without an alert.
 
-Both sensors returned 48 chronological readings, expected units/averages,
-and 2 anomalies; an unknown sensor returned 404. Mock mode shows
-`MOCK — NOT AI` and makes no explanation request until click. A live request
-using `gemini-3.8-flash` succeeded: the POST returned HTTP 200 with non-empty
-text, `mode: "LIVE"`, and the selected sensor ID; the UI showed `LIVE AI`.
-The provider uses typed model-output-step text extraction when the SDK's
-`outputText()` convenience field is empty. Live mode was verified but should
-not be assumed to be currently enabled. Keep the API key private; do not
-expose it or ask me to paste it.
+The sample database has two sensors and 48 readings per sensor, with two
+seeded anomalies per sensor. The selected range is available as 1H, 6H, or
+24H. Backend endpoints default to 24 hours and reject other values with
+HTTP 400; readings are selected inclusively relative to each sensor's latest
+stored timestamp, then Java recalculates summary statistics and anomalies.
+The selected range also flows into the explanation prompt. The Gemini
+provider sends that prompt to the model and does not need independent
+range-query or analytics logic. A genuine Gemini request was verified
+previously; live mode is optional and should not be assumed to be enabled.
+Keep the API key private; never expose it in frontend code, screenshots,
+source control, or chat.
 
-D7.4 teach-back and D8.1–D8.7 are complete. The trend chart displays the
-Java-provided anomaly markers, normal band and thresholds, readable time
-labels, and a UTC/value/status tooltip. Its responsive canvas has a defined
-height; both sensors were checked in the browser. The anomaly panel is an
-accessible table beside a click-only AI insight panel with provenance,
-pending/error states, and plain-text output. Nine frontend tests pass. At
-375, 768, and desktop widths, the page fits without horizontal scrolling;
-the lower panels stack on mobile. Keyboard focus and AI-button activation
-are tested, and the user confirmed native sensor selection with arrow keys.
-Frontend lint, all nine frontend tests, the production build, and all seven
-backend tests pass. The frontend bundle-size advisory remains non-blocking.
-The concise portfolio README embeds a full-page screenshot of the dashboard
-from the browser. Documentation records only observed results. No Git commit
-was made because this workspace is not a Git repository. Preserve the Day 8
-scope lock and proceed one micro-step at a time so I can understand and verify
-each change.
-
-CSS readability follow-up: repeated panel appearance is shared through the
-`.panel` class, while component classes keep each panel's purpose-specific
-layout. Section comments explain the design tokens, responsive breakpoint,
-and accessibility rules. Recheck the screenshot and frontend tests after
-future style changes.
+The README includes a full-page screenshot, but it shows the earlier 24H
+dashboard before the range controls were added; the README labels that
+limitation. Preserve the beginner scope and proceed one micro-step at a time
+if continuing the learning exercises.
 ```
 
 If you understand only one principle this week, make it this: **you control the learning pace; Codex is your pair programmer and teacher, not the person who replaces your understanding.**

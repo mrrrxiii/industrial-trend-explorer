@@ -10,10 +10,11 @@ import {
     YAxis,
 } from 'recharts';
 import type { DotItemDotProps } from 'recharts';
-import type { Reading } from '../types';
+import type { Reading, TimeRangeHours } from '../types';
 
 type Props = {
     readings: Reading[];
+    hours: TimeRangeHours;
     unit: string;
     sensorName: string;
     normalMin: number;
@@ -71,6 +72,7 @@ function TrendTooltip({ active, payload, unit }: TrendTooltipProps) {
 
 export function TrendChart({
     readings,
+    hours,
     unit,
     sensorName,
     normalMin,
@@ -89,7 +91,7 @@ export function TrendChart({
         <section className="panel chart-panel" aria-labelledby="trend-heading">
             <div className="chart-heading">
                 <div>
-                    <p className="section-kicker">24-hour history</p>
+                    <p className="section-kicker">{hours}-hour history</p>
                     <h2 id="trend-heading">Sensor trend</h2>
                 </div>
                 <div className="chart-legend" aria-label="Chart legend">

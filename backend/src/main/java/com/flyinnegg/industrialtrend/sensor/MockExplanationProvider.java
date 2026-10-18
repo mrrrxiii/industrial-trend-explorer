@@ -23,7 +23,8 @@ public class MockExplanationProvider implements ExplanationProvider {
                 .map(reading -> reading.timestamp() + " = " + reading.value() + " " + sensor.unit())
                 .collect(Collectors.joining("; "));
 
-        return "This is simulated data for " + sensor.name() + ". "
+        return "This is simulated data for " + sensor.name() + " over the selected "
+                + trend.hours() + "-hour range. "
                 + summary.count() + " readings range from " + summary.min() + " to " + summary.max() + " "
                 + sensor.unit() + " (normal range " + sensor.normalMin() + " to " + sensor.normalMax() + " "
                 + sensor.unit() + "), with an average of " + summary.avg() + ". "

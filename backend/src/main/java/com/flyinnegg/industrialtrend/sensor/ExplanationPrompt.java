@@ -16,9 +16,10 @@ final class ExplanationPrompt {
                 .collect(Collectors.joining("; "));
 
         return """
-                Explain this synthetic sensor summary in 3–5 short sentences. Use only the supplied values. State the anomaly count and how the readings compare with the normal range. Do not invent causes, predictions, diagnoses, equipment-maintenance advice, or live operational facts. Say explicitly that this is simulated data, not operational guidance.
+                Explain this synthetic sensor summary for the selected %d-hour window in 3–5 short sentences. Use only the supplied values. State the anomaly count and how the readings compare with the normal range. Do not invent causes, predictions, diagnoses, equipment-maintenance advice, or live operational facts. Say explicitly that this is simulated data, not operational guidance.
 
                 Sensor: %s
+                Time range: %d hours
                 Unit: %s
                 Normal range: %s to %s %s
                 Count: %d
@@ -31,7 +32,7 @@ final class ExplanationPrompt {
                 Anomalous readings (timestamp = value unit): %s
                 """
                 .formatted(
-                        sensor.name(), sensor.unit(), sensor.normalMin(), sensor.normalMax(), sensor.unit(),
+                        trend.hours(), sensor.name(), trend.hours(), sensor.unit(), sensor.normalMin(), sensor.normalMax(), sensor.unit(),
                         summary.count(), summary.min(), summary.max(), summary.avg(), summary.anomalyCount(),
                         summary.firstTimestamp(), summary.lastTimestamp(), anomalies);
     }

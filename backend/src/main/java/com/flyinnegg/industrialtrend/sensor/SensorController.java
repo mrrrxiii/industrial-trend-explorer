@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,12 +28,16 @@ public class SensorController {
     }
 
     @GetMapping("/{sensorId}/trend")
-    public TrendResponse getTrend(@PathVariable String sensorId) {
-        return sensorService.getTrend(sensorId);
+    public TrendResponse getTrend(
+            @PathVariable String sensorId,
+            @RequestParam(defaultValue = "24") int hours) {
+        return sensorService.getTrend(sensorId, hours);
     }
 
     @PostMapping("/{sensorId}/explanation")
-    public ExplanationResponse explain(@PathVariable String sensorId) {
-        return explanationService.explain(sensorId);
+    public ExplanationResponse explain(
+            @PathVariable String sensorId,
+            @RequestParam(defaultValue = "24") int hours) {
+        return explanationService.explain(sensorId, hours);
     }
 }

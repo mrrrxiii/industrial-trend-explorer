@@ -289,6 +289,44 @@ li + li {
   font-weight: 650;
 }
 
+.time-range-selector {
+  display: grid;
+  gap: var(--space-1);
+  min-width: max-content;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.time-range-selector legend {
+  padding: 0;
+}
+
+.time-range-buttons {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.time-range-button {
+  min-width: 3.5rem;
+  min-height: 44px;
+  padding: 0.55rem 0.7rem;
+  color: var(--color-accent-strong);
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+.time-range-button:hover:not(:disabled),
+.time-range-button[aria-pressed="true"] {
+  color: #ffffff;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
 .summary-heading h2 {
   margin-bottom: 0;
 }
@@ -568,6 +606,23 @@ li + li {
   border: 0;
 }
 
+/* At intermediate widths, give the sensor details their own row so both
+   controls remain readable without squeezing the selected sensor name. */
+@media (max-width: 900px) and (min-width: 721px) {
+  .sensor-context {
+    flex-wrap: wrap;
+  }
+
+  .sensor-identity {
+    flex-basis: 100%;
+  }
+
+  .sensor-selector {
+    flex: 1 1 220px;
+    min-width: 0;
+  }
+}
+
 /* At phone widths, stack paired content and use smaller gaps and padding. */
 @media (max-width: 720px) {
   .app-shell {
@@ -609,6 +664,10 @@ li + li {
   .sensor-selector {
     flex-basis: auto;
     min-width: 0;
+    width: 100%;
+  }
+
+  .time-range-selector {
     width: 100%;
   }
 

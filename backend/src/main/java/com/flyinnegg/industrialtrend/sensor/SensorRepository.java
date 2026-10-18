@@ -1,6 +1,8 @@
 package com.flyinnegg.industrialtrend.sensor;
 
 import java.time.OffsetDateTime;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,14 +49,35 @@ public class SensorRepository {
                 .optional();
     }
 
-    public List<StoredReading> findReadingsBySensorId(String sensorId) {
+    public Optional<Instant> findLatestTimestampBySensorId(String sensorId) {
+        return jdbcClient.sql("""
+                SELECT observed_at
+                FROM readings
+                WHERE sensor_id = :sensorId
+                ORDER BY observed_at DESC
+                LIMIT 1
+                """)
+                .param("sensorId", sensorId)
+                .query((resultSet, rowNumber) ->
+                        resultSet.getObject("observed_at", OffsetDateTime.class).toInstant())
+                .optional();
+    }
+
+    public List<StoredReading> findReadingsBySensorIdBetween(
+            String sensorId,
+            Instant startTimestamp,
+            Instant endTimestamp) {
         return jdbcClient.sql("""
                 SELECT observed_at, value
                 FROM readings
                 WHERE sensor_id = :sensorId
+                  AND observed_at >= :startTimestamp
+                  AND observed_at <= :endTimestamp
                 ORDER BY observed_at
                 """)
                 .param("sensorId", sensorId)
+                .param("startTimestamp", OffsetDateTime.ofInstant(startTimestamp, ZoneOffset.UTC))
+                .param("endTimestamp", OffsetDateTime.ofInstant(endTimestamp, ZoneOffset.UTC))
                 .query((resultSet, rowNumber) -> new StoredReading(
                         resultSet.getObject("observed_at", OffsetDateTime.class).toInstant(),
                         resultSet.getDouble("value")))

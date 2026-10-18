@@ -17,9 +17,10 @@ class ExplanationPromptTests {
                 new Reading(Instant.parse("2026-10-01T18:00:00Z"), 88, true));
         Summary summary = new Summary(48, 68.0, 88.0, 70.66666666666667, 2,
                 Instant.parse("2026-10-01T00:00:00Z"), Instant.parse("2026-10-01T23:30:00Z"));
-        String prompt = ExplanationPrompt.from(new TrendResponse(sensor, readings, summary));
+        String prompt = ExplanationPrompt.from(new TrendResponse(sensor, readings, summary, 6));
 
         assertTrue(prompt.contains("Anomaly count: 2"));
+        assertTrue(prompt.contains("Time range: 6 hours"));
         assertTrue(prompt.contains("2026-10-01T06:00:00Z = 86.0 °C"));
         assertTrue(prompt.contains("Do not invent causes"));
     }
