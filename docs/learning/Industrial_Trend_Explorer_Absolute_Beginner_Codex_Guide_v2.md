@@ -60,11 +60,11 @@ All paths below start at the **repository root** (the `industrial-trend-explorer
 
 ## D. The Codex tutor contract (copy this into Codex once)
 
-> Read `Industrial_Trend_Explorer_Absolute_Beginner_Codex_Guide_v2.md`. Act as a patient tutor for a Java programmer who has **zero frontend experience**. Respect the fixed scope and data/API contracts. **Never implement the whole lesson or several lessons at once.** When I say `Start D1.1`, begin with **only micro-step A** of that lesson. First define new words and syntax in plain English, show a tiny example (no more than ten lines), ask me to **predict** its output, and STOP for my response. After I answer, help me type or edit just the current change, identify the exact file path, and explain each new line. Run/show the real verification (browser result, output, or command). Ask me to explain the result in my own words. Do not proceed without my `Next`. Do not hide installation failures, secretly use mock data in live mode, make unrelated changes, install extra frameworks, or expose keys. For a difficult command explain where to run it and what success looks like. After each micro-step, report the file(s) changed, actual test result, and next step ID, then STOP.
+> Read `docs/learning/Industrial_Trend_Explorer_Absolute_Beginner_Codex_Guide_v2.md`. Act as a patient tutor for a Java programmer who has **zero frontend experience**. Respect the fixed scope and data/API contracts. **Never implement the whole lesson or several lessons at once.** When I say `Start D1.1`, begin with **only micro-step A** of that lesson. First define new words and syntax in plain English, show a tiny example (no more than ten lines), ask me to **predict** its output, and STOP for my response. After I answer, help me type or edit just the current change, identify the exact file path, and explain each new line. Run/show the real verification (browser result, output, or command). Ask me to explain the result in my own words. Do not proceed without my `Next`. Do not hide installation failures, secretly use mock data in live mode, make unrelated changes, install extra frameworks, or expose keys. For a difficult command explain where to run it and what success looks like. After each micro-step, report the file(s) changed, actual test result, and next step ID, then STOP.
 
 **Commands you type to Codex:** `Start D1.1`; `Next` (continue *same* lesson's next micro-step); `I don't understand this line: ...`; `Show me the exact file before and after`; `Explain the error, do not fix it yet`; `Mark D1.1 complete and start D1.2`.
 
-**Your responsibilities:** type at least **one meaningful line** per lesson, predict a result before running it, and answer each lesson's understanding question. Codex can scaffold boilerplate; it must not steal the learning. Maintain `LEARNING_LOG.md`: for each lesson write (1) what I learned, (2) where the data goes, (3) what I actually verified. If you cannot explain a line, ask Codex to teach it before moving on.
+**Your responsibilities:** type at least **one meaningful line** per lesson, predict a result before running it, and answer each lesson's understanding question. Codex can scaffold boilerplate; it must not steal the learning. Maintain `docs/learning/LEARNING_LOG.md`: for each lesson write (1) what I learned, (2) where the data goes, (3) what I actually verified. If you cannot explain a line, ask Codex to teach it before moving on.
 
 **Micro-step pattern used throughout this guide:**
 
@@ -104,7 +104,7 @@ git init
 
 Save **this guide** into that root with the exact name in section D. From then on, open this root in VS Code. Before each new day's work, `pwd` should end with `industrial-trend-explorer`.
 
-Create `LEARNING_LOG.md` and a root `.gitignore` with at least:
+Create `docs/learning/LEARNING_LOG.md` and a root `.gitignore` with at least:
 
 ```gitignore
 node_modules/
@@ -230,7 +230,7 @@ export default App;
 Keep CSS simple; don't create new frameworks. **C:** The main Vite URL shows both lines and `npm --prefix frontend run build` succeeds. **D:** Explain the difference between `basics.html` with direct DOM edits and `App.tsx` with React describing the UI.
 
 ### [ ] D1.7 · Day 1 checkpoint (10 min)
-Add your own explanation to `LEARNING_LOG.md`; run the build; `git add . && git commit -m "Day 1: frontend foundations"`. **Stop if you cannot distinguish Node, npm, Vite, React and the browser.**
+Add your own explanation to `docs/learning/LEARNING_LOG.md`; run the build; `git add . && git commit -m "Day 1: frontend foundations"`. **Stop if you cannot distinguish Node, npm, Vite, React and the browser.**
 
 ---
 
@@ -549,7 +549,7 @@ Run both builds/tests. Check DevTools Network contains **no key**. Ensure `.env`
 **Learn:** Tests should assert what a user can do, not private component implementation details. **A:** Predict the callback value after choosing Pump Pressure. **B:** Codex installs **Vitest + React Testing Library** as dev dependencies and creates only `frontend/src/components/SensorSelector.test.tsx`. Render the selector with two sensors; choose Pump Pressure using a user event; verify the callback got `pump-pressure`. No chart snapshot tests, no UI framework. **C:** Run frontend tests and `npm --prefix frontend run build`. **D:** Explain why a behavior test is more stable than inspecting React's internal state.
 
 ### [ ] D7.2 · Run the entire path and negative checks (30 min)
-**Learn:** End-to-end checking here means verifying the complete request manually, not installing a huge browser testing suite. **B:** Verify: two sensor options; 48 chronological readings each; correct unit; temperature avg ~70.6667; pressure avg 3.59375; 2 anomalies each; loading/error/recovery; quick switching; no LLM before click; mock/live labels; no browser key; Java 404 on unknown sensor; backend tests passing. **C:** Write observed results into `LEARNING_LOG.md`; do not mark anything tested that you did not actually execute. **D:** Explain which layer is responsible for each failure.
+**Learn:** End-to-end checking here means verifying the complete request manually, not installing a huge browser testing suite. **B:** Verify: two sensor options; 48 chronological readings each; correct unit; temperature avg ~70.6667; pressure 3.59375; 2 anomalies each; loading/error/recovery; quick switching; no LLM before click; mock/live labels; no browser key; Java 404 on unknown sensor; backend tests passing. **C:** Write observed results into `docs/learning/LEARNING_LOG.md`; do not mark anything tested that you did not actually execute. **D:** Explain which layer is responsible for each failure.
 
 ### [ ] D7.3 · README that a stranger could follow (20 min)
 **Learn:** Reproducibility matters more than polished screenshots. **B:** Codex writes `README.md` using only **verified** prerequisites, install commands, compose startup, SQL seed, Java/React terminal commands, endpoints, ports, mock/live env variables, tests, known limitations, and stop commands. Document `LLM_MODE=mock|live`, `GOOGLE_API_KEY`, and `GEMINI_MODEL`; clearly say whether a real Gemini call was actually tested. Include a `.env.example` with **names only** and no secrets—never an actual key. **C:** Follow README from a fresh terminal without relying on Codex memory. **D:** Explain how to restart all components.
@@ -582,7 +582,7 @@ Build/test, commit, and mark completed checklist. Remove `frontend/public/basics
 **Scope lock:** Use only the existing React, TypeScript, Recharts, and CSS dependencies. Keep one page and one trend chart. Do **not** add routing, a sidebar, gauges, animation, a UI framework, an icon package, a theme switcher, extra APIs, or extra sensor calculations. Java remains authoritative for summaries and anomaly flags. Keep the simulated-data notice prominent and the AI explanation secondary to measured data.
 
 ### [x] D8.1 · Capture the baseline and define the visual hierarchy (15 min)
-**Learn:** A showcase page should make the most important information obvious before adding decoration. **A:** Before editing, identify the current order: title → selector → chart → summary → anomalies → AI. Predict which facts an interviewer should understand in ten seconds. **B:** Save no generated mockup and install nothing. Use this fixed hierarchy: compact product header and simulated-data badge; sensor context row; five summary cards; one large trend chart; anomaly table and AI explanation in a two-column lower section. **C:** At desktop width, sketch the hierarchy on paper or describe it in `LEARNING_LOG.md`. **D:** Explain why one strong chart communicates more than several redundant charts.
+**Learn:** A showcase page should make the most important information obvious before adding decoration. **A:** Before editing, identify the current order: title → selector → chart → summary → anomalies → AI. Predict which facts an interviewer should understand in ten seconds. **B:** Save no generated mockup and install nothing. Use this fixed hierarchy: compact product header and simulated-data badge; sensor context row; five summary cards; one large trend chart; anomaly table and AI explanation in a two-column lower section. **C:** At desktop width, sketch the hierarchy on paper or describe it in `docs/learning/LEARNING_LOG.md`. **D:** Explain why one strong chart communicates more than several redundant charts.
 
 ### [x] D8.2 · Create the dashboard shell and design tokens (30 min)
 **Learn:** CSS custom properties keep spacing, color, borders, and typography consistent. Semantic regions make structure understandable without relying on visual position. **A:** Predict which existing components need class names but no behavior changes. **B:** Replace the remaining starter-oriented rules in `frontend/src/index.css` with a small light industrial palette: off-white page background, white panels, dark navy/slate text, teal/blue accent, amber warning, red anomaly, subtle borders, and restrained shadows. Add a centered responsive page shell and semantic header/main/section layout. Use system fonts; do not download fonts. **C:** At 1280 px the content is centered and readable; no element depends on a fixed viewport height. **D:** Explain the difference between a reusable CSS token and a component-specific class.
@@ -609,7 +609,7 @@ npm --prefix frontend run build
 cd backend && ./mvnw test
 ```
 
-Keep behavior tests focused on user-visible outcomes; do not add brittle SVG snapshots. Verify two sensors, 48 readings, two anomaly rows per sensor, correct units/ranges, loading during rapid switching, no AI request before click, and truthful mock/live labeling. Keep the README concise and portfolio-ready: explain the project in plain language, show the technology stack and verified results, and embed a full-page screenshot of the actual dashboard at `docs/screenshots/dashboard-full-page.png`. Update feature descriptions and verification counts only with results actually observed. Add a short `LEARNING_LOG.md` entry explaining the visual decisions, then commit with a focused message such as `Day 8: portfolio dashboard polish`.
+Keep behavior tests focused on user-visible outcomes; do not add brittle SVG snapshots. Verify two sensors, 48 readings, two anomaly rows per sensor, correct units/ranges, loading during rapid switching, no AI request before click, and truthful mock/live labeling. Keep the README concise and portfolio-ready: explain the project in plain language, show the technology stack and verified results, and embed a full-page screenshot of the actual dashboard at `docs/screenshots/dashboard-full-page.png`. Update feature descriptions and verification counts only with results actually observed. Add a short `docs/learning/LEARNING_LOG.md` entry explaining the visual decisions, then commit with a focused message such as `Day 8: portfolio dashboard polish`.
 
 **Day 8 acceptance:** The first screen communicates the project purpose, selected sensor, normal range, summary, trend, and anomalies; the chart makes normal versus anomalous readings obvious; the layout works on narrow and wide screens; no backend/API contract changed; lint, frontend tests, frontend build, and backend tests pass.
 
@@ -715,12 +715,14 @@ No request body. Java reloads authoritative stats and selected anomalies, create
 
 ```text
 industrial-trend-explorer/
-  Industrial_Trend_Explorer_Absolute_Beginner_Codex_Guide_v2.md
   README.md
-  LEARNING_LOG.md
   .gitignore
   .env.example
   compose.yaml
+  docs/
+    learning/
+      Industrial_Trend_Explorer_Absolute_Beginner_Codex_Guide_v2.md
+      LEARNING_LOG.md
   db/
     schema.sql
     seed.sql
@@ -826,7 +828,7 @@ Concepts to **discuss, not build**: routing, frontend testing pyramid, accessibi
 # Tutor prompt for your current checkpoint
 
 ```text
-Read Industrial_Trend_Explorer_Absolute_Beginner_Codex_Guide_v2.md
+Read docs/learning/Industrial_Trend_Explorer_Absolute_Beginner_Codex_Guide_v2.md
 completely. I have five years of Java backend experience and have completed
 D7.4. This project supplements that background with a hands-on
 React/TypeScript and server-side Gemini example; present it as a small
