@@ -1,4 +1,3 @@
-import './App.css'
 import { SensorDetails } from './components/SensorDetails';
 import { SensorSelector } from './components/SensorSelector';
 import { TrendChart } from './components/TrendChart';
@@ -7,6 +6,7 @@ import { getSensors, getTrend } from './api';
 import type { Sensor, TrendResponse } from './types';
 import { SummaryCards } from './components/SummaryCards';
 import { AiExplanation } from './components/AiExplanation';
+import { AnomalyList } from './components/AnomalyList';
 
 type LoadStatus = 'loading' | 'empty' | 'error' | 'success';
 
@@ -19,6 +19,13 @@ function App() {
   const [trendError, setTrendError] = useState<string | null>(null);
   const [sensorsLoaded, setSensorsLoaded] = useState(false);
   const selectedSensor = sensors.find(sensor => sensor.id === selectedSensorId);
+
+  function handleSensorChange(id: string) {
+    setStatus('loading');
+    setTrend(null);
+    setTrendError(null);
+    setSelectedSensorId(id);
+  }
 
   useEffect(() => {
     getSensors()
@@ -36,12 +43,10 @@ function App() {
     if (!selectedSensorId) return;
 
     const controller = new AbortController();
-    setStatus('loading');
-    setTrend(null);
-    setTrendError(null);
 
     getTrend(selectedSensorId, controller.signal)
       .then(data => {
+        if (controller.signal.aborted) return;
         setTrend(data);
         setStatus(data.readings.length === 0 ? 'empty' : 'success');
       })
@@ -67,7 +72,7 @@ function App() {
           <SensorSelector
             sensors={sensors}
             selectedId={selectedSensorId}
-            onChange={setSelectedSensorId}
+            onChange={handleSensorChange}
           />
           {selectedSensor && <SensorDetails sensor={selectedSensor} />}
           {status === 'loading' && <p>Loading trend...</p>}
@@ -75,10 +80,11 @@ function App() {
           {status === 'error' && (
             <p role="alert">Unable to load trend: {trendError}</p>
           )}
-          {status === 'success' && trend && selectedSensor && (
+          {status === 'success' && trend?.sensor.id === selectedSensorId && selectedSensor && (
             <>
               <TrendChart readings={trend.readings} unit={trend.sensor.unit} />
               <SummaryCards summary={trend.summary} />
+              <AnomalyList readings={trend.readings} unit={trend.sensor.unit} />
               <AiExplanation key={selectedSensorId} sensorId={selectedSensorId} />
             </>
           )}

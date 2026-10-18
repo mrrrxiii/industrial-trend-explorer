@@ -575,6 +575,46 @@ Build/test, commit, and mark completed checklist. Remove `frontend/public/basics
 
 ---
 
+# Day 8 (optional): Portfolio visualization polish
+
+**Goal:** Present the completed project as a clear industrial analytics dashboard without changing its data contracts, backend behavior, or learning-project scope.
+
+**Scope lock:** Use only the existing React, TypeScript, Recharts, and CSS dependencies. Keep one page and one trend chart. Do **not** add routing, a sidebar, gauges, animation, a UI framework, an icon package, a theme switcher, extra APIs, or extra sensor calculations. Java remains authoritative for summaries and anomaly flags. Keep the simulated-data notice prominent and the AI explanation secondary to measured data.
+
+### [x] D8.1 · Capture the baseline and define the visual hierarchy (15 min)
+**Learn:** A showcase page should make the most important information obvious before adding decoration. **A:** Before editing, identify the current order: title → selector → chart → summary → anomalies → AI. Predict which facts an interviewer should understand in ten seconds. **B:** Save no generated mockup and install nothing. Use this fixed hierarchy: compact product header and simulated-data badge; sensor context row; five summary cards; one large trend chart; anomaly table and AI explanation in a two-column lower section. **C:** At desktop width, sketch the hierarchy on paper or describe it in `LEARNING_LOG.md`. **D:** Explain why one strong chart communicates more than several redundant charts.
+
+### [ ] D8.2 · Create the dashboard shell and design tokens (30 min)
+**Learn:** CSS custom properties keep spacing, color, borders, and typography consistent. Semantic regions make structure understandable without relying on visual position. **A:** Predict which existing components need class names but no behavior changes. **B:** Replace the remaining starter-oriented rules in `frontend/src/index.css` with a small light industrial palette: off-white page background, white panels, dark navy/slate text, teal/blue accent, amber warning, red anomaly, subtle borders, and restrained shadows. Add a centered responsive page shell and semantic header/main/section layout. Use system fonts; do not download fonts. **C:** At 1280 px the content is centered and readable; no element depends on a fixed viewport height. **D:** Explain the difference between a reusable CSS token and a component-specific class.
+
+### [ ] D8.3 · Polish sensor context and summary cards (30 min)
+**Learn:** Information hierarchy uses size, grouping, labels, and whitespace—not just color. **A:** Predict which values should be visible without reading the chart. **B:** Turn the page heading and simulated-data notice into a compact dashboard header. Place the selector, sensor name, unit, and inclusive normal range in one sensor-context panel. Update `SummaryCards` to render five responsive cards for count, minimum, maximum, average, and anomaly count. Include the selected unit on numeric values and give the anomaly card a restrained alert treatment when the count is greater than zero. Do not label the machine “healthy,” “safe,” or “live.” **C:** Both sensors show the same layout with their own units and values. **D:** Explain why an anomaly count is evidence while “healthy” would be an unsupported conclusion.
+
+### [ ] D8.4 · Make the trend chart explain the data (45 min)
+**Learn:** A useful chart shows context, thresholds, and exceptions. Decoration that does not help interpretation is chart junk. **A:** Predict where the two known outliers should appear relative to the normal range. **B:** Extend `TrendChart` props with `normalMin` and `normalMax`. Use existing Recharts features to add a light `CartesianGrid`, time-only X-axis labels, a unit-aware Y axis, a bounded normal-range `ReferenceArea`, dashed `ReferenceLine` limits, a clear series line, visible anomaly markers, and a tooltip containing the full UTC timestamp, value/unit, and anomaly state. Keep animations disabled. Use a responsive container and avoid displaying all 48 timestamp labels at once. **C:** Reactor shows a 60–80 °C band with anomaly points at 86 and 88; Pump shows a 2–5 bar band with anomaly points at 5.8 and 5.9. Switching sensors updates every label, range, and point. **D:** Explain why the frontend visualizes Java-provided anomaly flags instead of reclassifying readings.
+
+### [ ] D8.5 · Convert anomalies and AI output into clear panels (30 min)
+**Learn:** Tables are better than prose lists for comparing exact timestamp/value pairs. AI output needs provenance and should not dominate measured facts. **A:** Predict how many anomaly table rows each seeded sensor displays. **B:** Change `AnomalyList` to an accessible table with UTC time, value/unit, and normal range columns; keep its empty-state message. Style `AiExplanation` as a neighboring insight panel with a clear button, pending/error states, and the existing `LIVE AI` or `MOCK — NOT AI` provenance label. Render provider text as plain text only. **C:** Each seeded sensor shows exactly two anomaly rows; no explanation appears before a click. **D:** Explain why the table and mode label improve trust.
+
+### [ ] D8.6 · Responsive, accessible, and state-complete review (30 min)
+**Learn:** A polished screenshot is not enough; loading, error, empty, keyboard, and narrow-screen behavior are part of the interface. **A:** Predict how the lower two-column area should change on a phone. **B:** Add one practical breakpoint that stacks summary cards and lower panels without horizontal page scrolling. Preserve visible labels, heading order, keyboard focus, sufficient contrast, and `role="alert"` error messages. Give the chart a concise accessible name and ensure the anomaly table has a caption or associated heading. Keep loading and empty states inside the same panel area so the page does not appear frozen. **C:** Manually check approximately 375 px, 768 px, and desktop widths; operate the selector and AI button with the keyboard. **D:** Explain why responsive layout and accessibility are engineering features rather than visual extras.
+
+### [ ] D8.7 · Regression checks and portfolio checkpoint (20 min)
+Run:
+
+```bash
+npm --prefix frontend run lint
+npm --prefix frontend test
+npm --prefix frontend run build
+cd backend && ./mvnw test
+```
+
+Keep behavior tests focused on user-visible outcomes; do not add brittle SVG snapshots. Verify two sensors, 48 readings, two anomaly rows per sensor, correct units/ranges, loading during rapid switching, no AI request before click, and truthful mock/live labeling. Update the README feature description and verification count only with results actually observed. Add a short `LEARNING_LOG.md` entry explaining the visual decisions, then commit with a focused message such as `Day 8: portfolio dashboard polish`.
+
+**Day 8 acceptance:** The first screen communicates the project purpose, selected sensor, normal range, summary, trend, and anomalies; the chart makes normal versus anomalous readings obvious; the layout works on narrow and wide screens; no backend/API contract changed; lint, frontend tests, frontend build, and backend tests pass.
+
+---
+
 # Reference contracts (Codex must follow these exactly)
 
 ## R1. Sensor data and exact expected results
@@ -787,19 +827,35 @@ Concepts to **discuss, not build**: routing, frontend testing pyramid, accessibi
 
 ```text
 Read Industrial_Trend_Explorer_Absolute_Beginner_Codex_Guide_v2.md
-completely. I am a Java developer working through D7.4. The selector
-behavior test, frontend build, seven backend tests, and root README startup
-check pass. Both sensors returned 48 chronological readings, expected
-units/averages, and 2 anomalies; unknown sensor returned 404. Mock mode
-shows `MOCK — NOT AI` and makes no explanation request until click. A live
-request using `gemini-3.8-flash` has now succeeded: the POST returned HTTP
-200 with non-empty text, `mode: "LIVE"`, and the selected sensor ID; the UI
-showed `LIVE AI`. The provider uses typed model-output-step text extraction
-when the SDK's `outputText()` convenience field is empty. Gemini live is
-verified. Keep the API key private; the backend is currently running in
-live mode because I chose to keep it running. Do not expose or ask me to
-paste the key. Continue D7.4 one teach-back item at a time and ask me to
-explain my own code.
+completely. I have five years of Java backend experience and have completed
+D7.4. This project supplements that background with a hands-on
+React/TypeScript and server-side Gemini example; present it as a small
+synthetic-data demo, not as professional Seeq or production-scale industrial
+experience.
+
+The final project review is complete. Seven backend tests, three frontend
+behavior tests, frontend ESLint, the TypeScript/Vite production build, and
+the root README startup check pass. The React UI displays the Java-provided
+chart, summary, and anomaly list. Changing sensors immediately clears the
+old trend, shows a loading state, aborts the obsolete request, and rejects
+responses that do not match the current selection. Exact Node, npm, Java,
+Docker, Docker Compose, and Git versions are recorded in the README. The
+temporary learning data, page, and unused Vite scaffold files were removed.
+
+Both sensors returned 48 chronological readings, expected units/averages,
+and 2 anomalies; an unknown sensor returned 404. Mock mode shows
+`MOCK — NOT AI` and makes no explanation request until click. A live request
+using `gemini-3.8-flash` succeeded: the POST returned HTTP 200 with non-empty
+text, `mode: "LIVE"`, and the selected sensor ID; the UI showed `LIVE AI`.
+The provider uses typed model-output-step text extraction when the SDK's
+`outputText()` convenience field is empty. Live mode was verified but should
+not be assumed to be currently enabled. Keep the API key private; do not
+expose it or ask me to paste it.
+
+D7.4 teach-back and the functional review are complete. The optional Day 8
+portfolio visualization direction is approved but not implemented. Continue
+at D8.2, preserve the Day 8 scope lock, and proceed one scoped step at a
+time so I can understand and verify each change.
 ```
 
 If you understand only one principle this week, make it this: **you control the learning pace; Codex is your pair programmer and teacher, not the person who replaces your understanding.**

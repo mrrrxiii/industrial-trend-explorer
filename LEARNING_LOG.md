@@ -56,3 +56,7 @@ Created the root `README.md` and a names-only `.env.example`. Followed the start
 
 Day 7.4:
 After adding the typed output-step fallback, one real click-triggered request using `gemini-3.8-flash` returned HTTP 200 with `mode: "LIVE"`, the selected `pump-pressure` sensor ID, and non-empty generated text consistent with Java's summary. The UI displayed `LIVE AI`. Gemini live integration is now verified; the backend remains running in live mode at the user's request.
+
+Portfolio positioning: five years of Java backend experience, with this project as an additional hands-on example of frontend (React/TypeScript) and server-side LLM (Gemini) skills. Describe it as a small synthetic-data demo, not production-scale industrial or professional Seeq experience.
+
+D7.4 teach-back: explained the backend/frontend summary responsibilities, Node/npm, Vite/React, compile-time and runtime validation, props/callbacks, effect versus click-triggered requests, stale-request cancellation, the API/database path, mock versus live credentials, and the changes needed for large datasets/streaming.

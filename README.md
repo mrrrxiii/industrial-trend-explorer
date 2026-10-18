@@ -1,29 +1,115 @@
+<div align="center">
+
 # Industrial Trend Explorer
 
-A learning project that displays synthetic industrial sensor trends through a React and TypeScript frontend, a Spring Boot API, and PostgreSQL.
+### Explore sensor data. Understand trends. Explain anomalies.
 
-## Current verification status
+**A full-stack analytics demo with deterministic Java calculations and on-demand Gemini explanations.**
 
-- The frontend, Java API, and PostgreSQL data path have been exercised locally.
-- The deterministic explanation provider is the default and has been verified. Its response is labeled **MOCK — NOT AI**.
-- Gemini live mode is **VERIFIED** with `gemini-3.8-flash`: a real click-triggered POST returned HTTP 200 with `mode: "LIVE"`, the selected sensor ID, and non-empty generated text. Two earlier attempts returned HTTP 502; one revealed that the SDK's `outputText()` accessor was empty. The provider now falls back to extracting text from typed model-output steps, covered by unit tests.
-- All readings are synthetic. This is a learning demo, not an operational industrial monitoring system.
+<p>
+  <img alt="React" src="https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white">
+  <img alt="Java" src="https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk&logoColor=white">
+  <img alt="Spring Boot" src="https://img.shields.io/badge/Spring_Boot-4-6DB33F?logo=springboot&logoColor=white">
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white">
+  <img alt="Gemini" src="https://img.shields.io/badge/Gemini-Live_Verified-8E75B2?logo=googlegemini&logoColor=white">
+</p>
 
-## Requirements
+</div>
 
-Versions used for the current build:
+---
 
-- Node.js 24.22.0 and npm 11.19.1
-- Java 25 (the backend Maven project targets Java 25)
-- Docker with the Compose plugin
+## Overview
 
-PostgreSQL 17 runs in Docker Compose. Ports used locally are PostgreSQL `55432`, Spring Boot `8080`, and Vite `5173`.
+Select a sensor to explore its readings, chart, summary, and anomalies. Request a grounded natural-language explanation with Gemini when needed.
 
-## Start the application
+| Sensors | Data points | Anomalies per sensor | AI provider |
+|:---:|:---:|:---:|:---:|
+| 2 | 48 each | 2 | Gemini 3.8 Flash |
 
-Run these commands from the repository root.
+> **Data notice:** All readings are synthetic. This demo is for learning and portfolio demonstration—not operational industrial monitoring or safety guidance.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    subgraph Frontend
+        UI["React + TypeScript"]
+        Chart["Recharts visualization"]
+    end
+    subgraph Backend
+        API["Spring Boot REST API"]
+        Calc["Java summary + anomaly calculation"]
+        Prompt["Grounded prompt"]
+        Provider{"Provider mode"}
+        Mock["Deterministic mock"]
+    end
+    DB[("PostgreSQL")]
+    Gemini["Gemini API"]
+
+    UI -->|"GET trend"| API
+    API -->|"JdbcClient"| DB
+    DB --> API
+    API --> Calc --> UI
+    UI --> Chart
+    UI -->|"POST on button click"| API
+    API --> Prompt --> Provider
+    Provider -->|"Default"| Mock
+    Provider -->|"Optional live"| Gemini
+    Mock --> API
+    Gemini --> API
+    API -->|"Text + mode"| UI
+```
+
+## Features
+
+| Area | Implementation |
+| --- | --- |
+| **Visualization** | Interactive time-series charts and summary cards for Reactor Temperature and Pump Pressure |
+| **Analytics** | Java-calculated count, minimum, maximum, average, and anomaly count |
+| **REST API** | Sensor and trend endpoints; unknown sensor IDs return HTTP `404` |
+| **React data flow** | Typed UI, runtime JSON validation, loading/error/empty states |
+| **Request handling** | `AbortController` prevents stale results after changing sensors |
+| **LLM integration** | Click-triggered Gemini request with a prompt grounded in calculated facts |
+| **Credential safety** | Gemini API key remains on the backend; no browser-side secret |
+| **Provider clarity** | Default mock is labeled `MOCK — NOT AI`; successful Gemini output is labeled `LIVE AI` |
+
+## Gemini integration status
+
+**Live request verified.** A real explanation request using `gemini-3.8-flash` returned HTTP `200`, non-empty generated text, the selected sensor ID, and `mode: "LIVE"`. The frontend displayed **LIVE AI**.
+
+The backend uses Google's Java GenAI SDK. It extracts text from typed model-output steps when the SDK's convenience `outputText()` field is absent. This response handling is covered by unit tests.
+
+Mock mode is the default. To use Gemini locally, configure `LLM_MODE=live`, `GOOGLE_API_KEY`, and `GEMINI_MODEL` **in the backend process only**. Never commit or expose the key. Model access, quotas, and terms may change; use synthetic data only.
+
+## Technology keywords
+
+<p>
+  <kbd>Java</kbd> <kbd>Spring Boot</kbd> <kbd>REST API</kbd> <kbd>JDBC</kbd> <kbd>PostgreSQL</kbd>
+  <br>
+  <kbd>React</kbd> <kbd>TypeScript</kbd> <kbd>Recharts</kbd> <kbd>Data Visualization</kbd>
+  <br>
+  <kbd>Gemini API</kbd> <kbd>Google GenAI SDK</kbd> <kbd>LLM Integration</kbd> <kbd>Prompt Grounding</kbd>
+  <br>
+  <kbd>Runtime Validation</kbd> <kbd>AbortController</kbd> <kbd>JUnit</kbd> <kbd>Vitest</kbd> <kbd>Docker Compose</kbd>
+</p>
+
+## Run locally
+
+**Versions used for the verified local build:**
+
+| Tool | Version |
+| --- | --- |
+| Node.js | 24.22.0 |
+| npm | 11.19.1 |
+| Eclipse Temurin OpenJDK | 25.0.4.1 LTS |
+| Docker Engine | 29.4.0 |
+| Docker Compose | 5.1.2 |
+| Git | 2.43.0 |
 
 ### 1. Start PostgreSQL and load the sample data
+
+Run from the repository root:
 
 ```bash
 docker compose up -d db
@@ -31,9 +117,7 @@ docker compose exec -T db psql -U app -d industrial_trends < db/schema.sql
 docker compose exec -T db psql -U app -d industrial_trends < db/seed.sql
 ```
 
-The seed is repeatable: it creates two sensors with 48 half-hour readings each, without duplicating existing rows.
-
-### 2. Start the Java API
+### 2. Start the backend
 
 In a separate terminal:
 
@@ -42,71 +126,37 @@ cd backend
 ./mvnw spring-boot:run
 ```
 
-The API uses local database defaults from `backend/src/main/resources/application.properties`. Do not place credentials in source control.
+### 3. Start the frontend
 
-### 3. Start the React frontend
-
-In another terminal:
+In another terminal at the repository root:
 
 ```bash
 npm --prefix frontend install
 npm --prefix frontend run dev
 ```
 
-Open the Vite URL shown in the terminal (normally `http://localhost:5173`). Vite proxies `/api` requests to the Java server on port `8080`.
+Open the Vite URL shown in the terminal (usually `http://localhost:5173`). Vite proxies API requests to Spring Boot on port `8080`; PostgreSQL uses port `55432`.
 
-## API routes
+## Verification
 
-- `GET /api/health` — health check
-- `GET /api/sensors` — available sensors
-- `GET /api/sensors/{sensorId}/trend` — readings and Java-calculated summary
-- `POST /api/sensors/{sensorId}/explanation` — explanation from the configured provider; this endpoint is called only after clicking **Explain with AI**
-
-Unknown sensor IDs return HTTP 404. Java calculates the statistics and anomalies; the explanation provider does not determine those facts.
-
-## Explanation providers and credentials
-
-The default is mock mode (`LLM_MODE` unset or `mock`). Mock responses are deterministic and explicitly labeled **MOCK — NOT AI**.
-
-Optional Gemini live mode uses these backend-only environment variables:
-
-- `LLM_MODE=live`
-- `GOOGLE_API_KEY` — secret; keep it out of React, browser requests, source files, screenshots, and Git
-- `GEMINI_MODEL` — a text model ID available to the Google AI Studio project
-
-Do not put a real key in `.env.example` or commit it. Follow the guide's private-input steps when setting up a local key. A successful live integration requires an actual response with `mode: "LIVE"`; compilation, mock output, and quota visibility do not prove it. Google AI Studio access, limits, and data-use terms can change. Use only this project's synthetic readings.
-
-## Tests and production build
-
-Run backend tests:
+| Check | Result |
+| --- |:---:|
+| Backend tests | ✅ 7 passed |
+| Frontend tests | ✅ 3 passed |
+| Frontend ESLint | ✅ Passed |
+| TypeScript + Vite production build | ✅ Passed |
+| Gemini live request | ✅ `mode: "LIVE"` |
 
 ```bash
-cd backend
-./mvnw test
-```
-
-Run the selector behavior test:
-
-```bash
+cd backend && ./mvnw test
+cd ..
 npm --prefix frontend test
-```
-
-Build the frontend:
-
-```bash
+npm --prefix frontend run lint
 npm --prefix frontend run build
 ```
 
-The current checks passed: seven backend tests, one frontend behavior test, and the TypeScript/Vite production build. Vite reports a bundle-size warning because the generated JavaScript chunk exceeds 500 kB; the build still succeeds.
+The frontend build currently includes a bundle-size advisory for a generated chunk over 500 kB; the build succeeds.
 
-## Stop the application
+## Scope
 
-- Press Ctrl+C in the frontend and backend terminals.
-- Stop PostgreSQL from the repository root with `docker compose down`.
-
-## Project notes
-
-- PostgreSQL uses the repository's `db/schema.sql` and `db/seed.sql`.
-- The selector test checks user-observable behavior: choosing Pump Pressure calls the parent callback with `pump-pressure`.
-- Gemini live was verified with one successful response after two failed attempts. The backend logs only safe provider status/category metadata and extracts text from typed model-output steps when needed; it does not log the key, prompt, or raw provider error.
-- This demo does not include production authentication, cost controls, monitoring, real sensor connectivity, or industrial safety controls.
+This project demonstrates full-stack application development and server-side LLM integration with sample data. It does not include production deployment, authentication, cost controls, observability, real sensor connectivity, or industrial safety controls.
