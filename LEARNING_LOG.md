@@ -60,3 +60,15 @@ After adding the typed output-step fallback, one real click-triggered request us
 Portfolio positioning: five years of Java backend experience, with this project as an additional hands-on example of frontend (React/TypeScript) and server-side LLM (Gemini) skills. Describe it as a small synthetic-data demo, not production-scale industrial or professional Seeq experience.
 
 D7.4 teach-back: explained the backend/frontend summary responsibilities, Node/npm, Vite/React, compile-time and runtime validation, props/callbacks, effect versus click-triggered requests, stale-request cancellation, the API/database path, mock versus live credentials, and the changes needed for large datasets/streaming.
+
+Day 8.4:
+The trend chart already had sensor-specific normal-range shading and limit lines, time-only axis labels, red markers driven by Java anomaly flags, and a tooltip with UTC timestamp, value/unit, and anomaly state. Browser inspection found the chart canvas had zero height, preventing Recharts from drawing its plot. Added a responsive chart height plus restrained legend and tooltip styling. Verified both sensors render a chart with their correct units/ranges and exactly two outlier markers above the normal band; switching sensors updates labels and limits. Hovering an outlier displayed the expected timestamp/value/status tooltip. Frontend tests and production build pass. Teach-back: use backend-provided anomaly flags to keep Java as the single source of truth and avoid duplicated threshold logic.
+
+Day 8.5:
+Replaced the anomaly list with an accessible table showing UTC time, reading/unit, and the sensor's normal range; each seeded sensor shows two rows, and the empty state is retained. Placed the table next to an AI explanation panel with on-demand context, explicit LIVE/MOCK provenance, pending and error states, and plain-text output. Browser checks confirmed sensor switching updates the two anomaly rows and does not trigger an explanation request. Added tests for the table, empty state, click-only AI call, plain-text rendering, pending status, provider label, and error state. All seven frontend tests and production build pass.
+
+Day 8.6:
+Verified responsive layouts at 375, 768, and desktop widths with no horizontal page overflow; the anomaly and AI panels stack on mobile and sit side-by-side at wider widths. Keyboard Tab reaches the sensor selector, the user confirmed arrow-key sensor selection, and a test verifies Enter activates the AI button. All nine frontend tests and frontend lint pass. Loading, empty, and error states remain visible, with errors announced as alerts.
+
+Day 8.7:
+Regression checks passed: frontend lint, all nine frontend tests, TypeScript/Vite production build, and all seven backend tests. The build reports a non-blocking generated-chunk advisory above 500 kB. API verification returned two sensors, 48 readings and two anomalies per sensor with the expected units/ranges; an unknown sensor returned 404. The README now describes the responsive accessible dashboard and reports these observed verification results. No Git commit was made because this workspace is not a Git repository.

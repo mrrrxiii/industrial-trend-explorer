@@ -65,11 +65,12 @@ flowchart LR
 
 | Area | Implementation |
 | --- | --- |
-| **Visualization** | Interactive time-series charts and summary cards for Reactor Temperature and Pump Pressure |
-| **Analytics** | Java-calculated count, minimum, maximum, average, and anomaly count |
+| **Visualization** | Responsive Recharts trends with normal-range bands, anomaly markers, and five summary cards |
+| **Analytics** | Java-calculated count, minimum, maximum, average, and anomaly count; accessible UTC anomaly table |
 | **REST API** | Sensor and trend endpoints; unknown sensor IDs return HTTP `404` |
 | **React data flow** | Typed UI, runtime JSON validation, loading/error/empty states |
 | **Request handling** | `AbortController` prevents stale results after changing sensors |
+| **Accessibility** | Keyboard-operable controls, visible focus, labeled chart and table, responsive layouts |
 | **LLM integration** | Click-triggered Gemini request with a prompt grounded in calculated facts |
 | **Credential safety** | Gemini API key remains on the backend; no browser-side secret |
 | **Provider clarity** | Default mock is labeled `MOCK — NOT AI`; successful Gemini output is labeled `LIVE AI` |
@@ -142,9 +143,11 @@ Open the Vite URL shown in the terminal (usually `http://localhost:5173`). Vite 
 | Check | Result |
 | --- |:---:|
 | Backend tests | ✅ 7 passed |
-| Frontend tests | ✅ 3 passed |
+| Frontend tests | ✅ 9 passed |
 | Frontend ESLint | ✅ Passed |
 | TypeScript + Vite production build | ✅ Passed |
+| Seeded trend API | ✅ 2 sensors, 48 readings and 2 anomalies each |
+| Responsive browser check | ✅ 375 / 768 / desktop; no horizontal overflow |
 | Gemini live request | ✅ `mode: "LIVE"` |
 
 ```bash

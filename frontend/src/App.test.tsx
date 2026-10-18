@@ -58,7 +58,7 @@ it('clears the old trend and shows loading when the sensor changes', async () =>
 
   render(<App />);
 
-  expect(await screen.findByText('Minimum: 86')).toBeTruthy();
+  expect(await screen.findByRole('heading', { name: 'Summary' })).toBeTruthy();
 
   await user.selectOptions(
     screen.getByRole('combobox', { name: 'Choose a sensor:' }),
@@ -66,6 +66,6 @@ it('clears the old trend and shows loading when the sensor changes', async () =>
   );
 
   expect(screen.getByText('Loading trend...')).toBeTruthy();
-  expect(screen.queryByText('Minimum: 86')).toBeNull();
+  expect(screen.queryByRole('heading', { name: 'Summary' })).toBeNull();
   expect(getTrend).toHaveBeenLastCalledWith('pump-pressure', expect.any(AbortSignal));
 });

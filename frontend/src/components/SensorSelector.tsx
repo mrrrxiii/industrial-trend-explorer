@@ -8,8 +8,8 @@ type Props = {
 
 export function SensorSelector({ sensors, selectedId, onChange }: Props) {
     return (
-        <label htmlFor="sensor">
-            Choose a sensor:
+        <label className="sensor-selector" htmlFor="sensor">
+            <span>Choose a sensor:</span>
             <select
                 id="sensor"
                 value={selectedId}

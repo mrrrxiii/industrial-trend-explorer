@@ -60,21 +60,36 @@ function App() {
   }, [selectedSensorId]);
 
   return (
-    <main>
-      <h1>Industrial Trend Explorer</h1>
-      <p>SIMULATED DATA — NOT LIVE INDUSTRIAL DATA</p>
-      {sensorError && <p role="alert">Unable to load sensors: {sensorError}</p>}
-      {!sensorError && !sensorsLoaded && <p>Loading sensors...</p>}
-      {!sensorError && sensorsLoaded && sensors.length === 0 && <p>No sensors available.</p>}
+    <div className="app-shell">
+      <header className="dashboard-header">
+        <div className="dashboard-heading">
+          <p className="eyebrow">Industrial analytics demo</p>
+          <h1>Industrial Trend Explorer</h1>
+          <p className="dashboard-subtitle">
+            Explore sensor trends, anomalies, and grounded explanations.
+          </p>
+        </div>
+        <p className="data-notice">
+          <span aria-hidden="true">●</span>
+          Simulated data — not live industrial data
+        </p>
+      </header>
+
+      <main className="dashboard-content">
+      {sensorError && <p className="status-message status-message--error" role="alert">Unable to load sensors: {sensorError}</p>}
+      {!sensorError && !sensorsLoaded && <p className="status-message">Loading sensors...</p>}
+      {!sensorError && sensorsLoaded && sensors.length === 0 && <p className="status-message">No sensors available.</p>}
 
       {!sensorError && sensors.length > 0 && (
-        <>
-          <SensorSelector
-            sensors={sensors}
-            selectedId={selectedSensorId}
-            onChange={handleSensorChange}
-          />
-          {selectedSensor && <SensorDetails sensor={selectedSensor} />}
+        <div className="sensor-content">
+          <section className="sensor-context" aria-labelledby="sensor-context-heading">
+            {selectedSensor && <SensorDetails sensor={selectedSensor} />}
+            <SensorSelector
+              sensors={sensors}
+              selectedId={selectedSensorId}
+              onChange={handleSensorChange}
+            />
+          </section>
           {status === 'loading' && <p>Loading trend...</p>}
           {status === 'empty' && <p>No readings for this sensor.</p>}
           {status === 'error' && (
@@ -82,15 +97,29 @@ function App() {
           )}
           {status === 'success' && trend?.sensor.id === selectedSensorId && selectedSensor && (
             <>
-              <TrendChart readings={trend.readings} unit={trend.sensor.unit} />
-              <SummaryCards summary={trend.summary} />
-              <AnomalyList readings={trend.readings} unit={trend.sensor.unit} />
-              <AiExplanation key={selectedSensorId} sensorId={selectedSensorId} />
+              <SummaryCards summary={trend.summary} unit={trend.sensor.unit} />
+              <TrendChart
+                readings={trend.readings}
+                unit={trend.sensor.unit}
+                sensorName={trend.sensor.name}
+                normalMin={trend.sensor.normalMin}
+                normalMax={trend.sensor.normalMax}
+              />
+              <div className="insight-panels">
+                <AnomalyList
+                  readings={trend.readings}
+                  unit={trend.sensor.unit}
+                  normalMin={trend.sensor.normalMin}
+                  normalMax={trend.sensor.normalMax}
+                />
+                <AiExplanation key={selectedSensorId} sensorId={selectedSensorId} />
+              </div>
             </>
           )}
-        </>
+        </div>
       )}
-    </main>
+      </main>
+    </div>
   );
 }
 export default App;

@@ -23,14 +23,28 @@ export function AiExplanation({ sensorId }: Props) {
     }
 
     return (
-        <section>
-            <button onClick={() => void handleExplain()} disabled={pending}>
-                {pending ? 'Generating...' : 'Explain with AI'}
-            </button>
-            {error && <p role="alert">{error}</p>}
-            {explanation && (
+        <section className="ai-panel" aria-labelledby="ai-explanation-heading">
+            <div className="insight-panel-heading">
                 <div>
-                    <strong>{explanation.mode === 'LIVE' ? 'LIVE AI' : 'MOCK — NOT AI'}</strong>
+                    <p className="section-kicker">On-demand insight</p>
+                    <h2 id="ai-explanation-heading">AI explanation</h2>
+                </div>
+                {explanation && (
+                    <span className={explanation.mode === 'LIVE' ? 'mode-badge mode-badge--live' : 'mode-badge'}>
+                        {explanation.mode === 'LIVE' ? 'LIVE AI' : 'MOCK — NOT AI'}
+                    </span>
+                )}
+            </div>
+            <p className="ai-panel-description">
+                Generated from the Java summary and flagged readings. This is not operational guidance.
+            </p>
+            <button className="ai-explain-button" onClick={() => void handleExplain()} disabled={pending}>
+                {pending ? 'Generating explanation…' : explanation ? 'Generate again' : 'Explain with AI'}
+            </button>
+            {pending && <p className="ai-pending" role="status">Waiting for the explanation provider…</p>}
+            {error && <p className="ai-error" role="alert">{error}</p>}
+            {explanation && (
+                <div className="ai-result">
                     <p>{explanation.text}</p>
                 </div>
             )}

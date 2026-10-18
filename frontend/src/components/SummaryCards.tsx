@@ -1,16 +1,49 @@
 import type { Summary } from '../types';
 
-type Props = { summary: Summary };
+type Props = {
+    summary: Summary;
+    unit: string;
+};
 
-export function SummaryCards({ summary }: Props) {
+type MetricCardProps = {
+    label: string;
+    value: string;
+    alert?: boolean;
+};
+
+function MetricCard({ label, value, alert = false }: MetricCardProps) {
     return (
-        <section>
-            <h2>Summary</h2>
-            <p>Count: {summary.count}</p>
-            <p>Minimum: {summary.min ?? 'No data'}</p>
-            <p>Maximum: {summary.max ?? 'No data'}</p>
-            <p>Average: {summary.avg === null ? 'No data' : summary.avg.toFixed(4)}</p>
-            <p>Anomalies: {summary.anomalyCount}</p>
+        <article className={alert ? 'metric-card metric-card--alert' : 'metric-card'}>
+            <span className="metric-label">{label}</span>
+            <strong className="metric-value">{value}</strong>
+        </article>
+    );
+}
+
+function formatMeasurement(value: number | null, unit: string, decimals?: number) {
+    if (value === null) return 'No data';
+    const formatted = decimals === undefined ? String(value) : value.toFixed(decimals);
+    return formatted + ' ' + unit;
+}
+
+export function SummaryCards({ summary, unit }: Props) {
+    return (
+        <section className="summary-section" aria-labelledby="summary-heading">
+            <div className="summary-heading">
+                <p className="section-kicker">Current dataset</p>
+                <h2 id="summary-heading">Summary</h2>
+            </div>
+            <div className="summary-grid">
+                <MetricCard label="Readings" value={String(summary.count)} />
+                <MetricCard label="Minimum" value={formatMeasurement(summary.min, unit)} />
+                <MetricCard label="Maximum" value={formatMeasurement(summary.max, unit)} />
+                <MetricCard label="Average" value={formatMeasurement(summary.avg, unit, 2)} />
+                <MetricCard
+                    label="Anomalies"
+                    value={String(summary.anomalyCount)}
+                    alert={summary.anomalyCount > 0}
+                />
+            </div>
         </section>
     );
 }
