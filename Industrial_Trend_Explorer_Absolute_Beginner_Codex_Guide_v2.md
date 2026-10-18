@@ -502,11 +502,13 @@ After both real sensors work, delete `demoData.ts` and any learning-only imports
 ### [ ] D6.4 · Make one live provider request (35 min)
 **Learn:** An **SDK** is a language-specific library for an external service. The API call is server-to-server. Credentials, usage costs, failures, and timeout require handling.
 
-**A:** Predict where an API key would be visible if included in React code. **B:** Codex checks the latest **official Java SDK** documentation and adds the supported `com.openai:openai-java` Maven dependency. Use the documented **Responses API** and the client reading the **`OPENAI_API_KEY` environment variable**. Keep the model configurable with `OPENAI_MODEL` and confirm a model your account supports; do not guess an ID. In your backend terminal set environment variables *privately* before starting Java, including `LLM_MODE=live`. (Ask Codex how to set variables without echoing them; do not paste the values into chat.) Code must set timeouts, return a generic non-2xx error on provider failures and avoid logging secrets. No automatic mock fallback.
+**A:** Predict where an API key would be visible if included in React code. **B:** This tutorial uses Gemini as its optional live provider. Codex checks the latest **official Google GenAI Java SDK** documentation and adds the supported `com.google.genai:google-genai` Maven dependency; use the documented API supported by that SDK. The SDK reads `GOOGLE_API_KEY` from the backend environment. Keep the model configurable with `GEMINI_MODEL` and confirm a model currently available to your Google AI Studio project; do not guess an ID. In your backend terminal set environment variables *privately* before starting Java, including `LLM_MODE=live`. (Ask Codex how to set variables without echoing them; do not paste the values into chat.) Code must set timeouts, return a generic non-2xx error on provider failures and avoid logging secrets. No automatic mock fallback.
+
+Google's free tier has limited model access and rate limits; availability and terms can change. Free-tier content may be used to improve Google's products, so send **only this project's synthetic readings**, never real or confidential data. Keep `LLM_MODE=mock` as the default so the public portfolio project works without credentials. Never commit or publish an API key.
 
 **C:** Perform **one** intentional low-cost button/API call. Success returns `mode: "LIVE"` and generated text. If your account/key/billing is unavailable, keep mock mode and record **LIVE NOT VERIFIED** in README. An invalid-key test must show an error, not fake success. **D:** Explain what part of this project makes it an *LLM application* and what **does not** qualify as production generative-AI infrastructure.
 
-Current official SDK reference: https://developers.openai.com/api/docs/libraries?language=java . Check current examples and release compatibility on implementation day; do not lock an arbitrary SDK/model version in this tutorial.
+Current official references: https://github.com/googleapis/java-genai and https://ai.google.dev/gemini-api/docs/get-started?lang=java. Check current examples and Java compatibility on implementation day. Configure the model instead of hard-coding an ID that may not be available to the account.
 
 ### [ ] D6.5 · React button, pending state, plain text (30 min)
 **Learn:** A **user click** triggers this POST; a boolean pending state disables the button while work runs. LLM output is untrusted text and must not be inserted as HTML.
@@ -723,7 +725,7 @@ Your learning-only `sensors.ts`, `demoData.ts`, and `public/basics.html` may exi
 
 **React shows wrong sensor after switching:** Check `selectedSensorId`, loading state reset, effect cleanup, request abort, and whether stale data is rendered under a new sensor heading.
 
-**OpenAI key/billing/model error:** Do not invent a model or retry repeatedly. Read the sanitized HTTP error and official documentation. Use explicit `mock` mode until you have verified access. Mark live as unverified.
+**Gemini key/quota/model error:** Do not invent a model or retry repeatedly. Read the sanitized HTTP error and official documentation. Use explicit `mock` mode until you have verified access. Mark live as unverified. Keep `GOOGLE_API_KEY` on the Java server only; never publish it. Free-tier limits and data-use terms can change, so check the current official pages before making a request.
 
 **Running behind schedule:** Finish the core React-to-Java-to-PostgreSQL path first; keep minimal chart; keep mock explanation clearly labeled; postpone extra frontend test until Day 7. Do **not** skip security, truth labeling, fundamental React learning, or your final teach-back. Don't add any Seeq-looking feature that doesn't teach the essential skill.
 
@@ -750,7 +752,9 @@ Concepts to **discuss, not build**: routing, frontend testing pyramid, accessibi
 - Recharts: https://recharts.github.io/
 - Spring Boot SQL/JdbcClient: https://docs.spring.io/spring-boot/reference/data/sql.html
 - PostgreSQL 17: https://www.postgresql.org/docs/17/
-- OpenAI official Java SDK: https://developers.openai.com/api/docs/libraries?language=java
+- Google GenAI Java SDK: https://github.com/googleapis/java-genai
+- Gemini API pricing and free-tier terms: https://ai.google.dev/gemini-api/docs/pricing
+- Gemini API Java quickstart: https://ai.google.dev/gemini-api/docs/get-started?lang=java
 
 ---
 

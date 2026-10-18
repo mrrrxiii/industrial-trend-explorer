@@ -1,4 +1,4 @@
-import type { Reading, Sensor, Summary, TrendResponse } from './types';
+import type { Explanation, Reading, Sensor, Summary, TrendResponse } from './types';
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -74,6 +74,25 @@ export async function getTrend(id: string, signal: AbortSignal): Promise<TrendRe
 
   if (!isTrendResponse(data)) {
     throw new Error('Invalid trend response');
+  }
+  return data;
+}
+
+function isExplanation(value: unknown): value is Explanation {
+  return isObject(value)
+    && typeof value.sensorId === 'string'
+    && typeof value.text === 'string'
+    && (value.mode === 'LIVE' || value.mode === 'MOCK');
+}
+
+export async function getExplanation(id: string): Promise<Explanation> {
+  const response = await fetch(`/api/sensors/${encodeURIComponent(id)}/explanation`, {
+    method: 'POST',
+  });
+  const data = await requireSuccessfulJson(response);
+
+  if (!isExplanation(data)) {
+    throw new Error('Invalid explanation response');
   }
   return data;
 }

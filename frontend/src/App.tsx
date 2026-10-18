@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { getSensors, getTrend } from './api';
 import type { Sensor, TrendResponse } from './types';
 import { SummaryCards } from './components/SummaryCards';
+import { AiExplanation } from './components/AiExplanation';
 
 type LoadStatus = 'loading' | 'empty' | 'error' | 'success';
 
@@ -78,6 +79,7 @@ function App() {
             <>
               <TrendChart readings={trend.readings} unit={trend.sensor.unit} />
               <SummaryCards summary={trend.summary} />
+              <AiExplanation key={selectedSensorId} sensorId={selectedSensorId} />
             </>
           )}
         </>

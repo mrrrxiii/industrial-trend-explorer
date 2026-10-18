@@ -35,3 +35,12 @@ how effect take controll when dropdown list is selected which trigger the api pr
 day 5.5
 stale response can misleading the data showing and cleanup/AbortController stop old request when send the new request to ensure always show latest result on latest selection.
 after quickly swithc, chart and summary always match the dropdown selctions
+
+Day 6.1–6.3:
+java get the facts and prompt is based on the java class summary with instructions specified. use a mock as configurated  and verified the response in test also with unknow sensor
+
+day 6.4:
+optional Java-side Gemini provider uses GOOGLE_API_KEY and GEMINI_MODEL; mock remains default; the POST returned MOCK; live Gemini is NOT VERIFIED because have no key yet; and production needs usage/cost limits.
+
+Day 6.5
+the click-only POST, visible mock label, clearing on sensor change, plain-text rendering for untrusted model output, and live Gemini not verified.
