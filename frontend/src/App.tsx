@@ -61,7 +61,7 @@ function App() {
 
   return (
     <div className="app-shell">
-      <header className="dashboard-header">
+      <header className="panel dashboard-header">
         <div className="dashboard-heading">
           <p className="eyebrow">Industrial analytics demo</p>
           <h1>Industrial Trend Explorer</h1>
@@ -76,13 +76,13 @@ function App() {
       </header>
 
       <main className="dashboard-content">
-      {sensorError && <p className="status-message status-message--error" role="alert">Unable to load sensors: {sensorError}</p>}
+      {sensorError && <p className="panel status-message status-message--error" role="alert">Unable to load sensors: {sensorError}</p>}
       {!sensorError && !sensorsLoaded && <p className="status-message">Loading sensors...</p>}
       {!sensorError && sensorsLoaded && sensors.length === 0 && <p className="status-message">No sensors available.</p>}
 
       {!sensorError && sensors.length > 0 && (
         <div className="sensor-content">
-          <section className="sensor-context" aria-labelledby="sensor-context-heading">
+          <section className="panel sensor-context" aria-labelledby="sensor-context-heading">
             {selectedSensor && <SensorDetails sensor={selectedSensor} />}
             <SensorSelector
               sensors={sensors}
@@ -90,10 +90,10 @@ function App() {
               onChange={handleSensorChange}
             />
           </section>
-          {status === 'loading' && <p>Loading trend...</p>}
-          {status === 'empty' && <p>No readings for this sensor.</p>}
+          {status === 'loading' && <p className="panel status-message">Loading trend...</p>}
+          {status === 'empty' && <p className="panel status-message">No readings for this sensor.</p>}
           {status === 'error' && (
-            <p role="alert">Unable to load trend: {trendError}</p>
+            <p className="panel status-message status-message--error" role="alert">Unable to load trend: {trendError}</p>
           )}
           {status === 'success' && trend?.sensor.id === selectedSensorId && selectedSensor && (
             <>

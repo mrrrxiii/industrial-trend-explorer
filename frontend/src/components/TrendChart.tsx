@@ -86,7 +86,7 @@ export function TrendChart({
     ];
 
     return (
-        <section className="chart-panel" aria-labelledby="trend-heading">
+        <section className="panel chart-panel" aria-labelledby="trend-heading">
             <div className="chart-heading">
                 <div>
                     <p className="section-kicker">24-hour history</p>

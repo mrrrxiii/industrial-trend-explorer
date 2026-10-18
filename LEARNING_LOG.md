@@ -72,3 +72,6 @@ Verified responsive layouts at 375, 768, and desktop widths with no horizontal p
 
 Day 8.7:
 Regression checks passed: frontend lint, all nine frontend tests, TypeScript/Vite production build, and all seven backend tests. The build reports a non-blocking generated-chunk advisory above 500 kB. API verification returned two sensors, 48 readings and two anomalies per sensor with the expected units/ranges; an unknown sensor returned 404. The README now describes the responsive accessible dashboard and reports these observed verification results. No Git commit was made because this workspace is not a Git repository.
+
+Day 8 CSS readability follow-up:
+Extracted the repeated card surface into one reusable `.panel` class, applied it to the dashboard header, sensor context, summary, chart, anomaly, AI, and status panels, and removed duplicated panel declarations from the responsive styles. Added short section and intent comments for design tokens, responsive layout, accessibility, and chart sizing decisions. Frontend lint, all nine tests, and production build pass; the dashboard was rechecked at 375, 768, and 1280 pixels with no horizontal overflow.

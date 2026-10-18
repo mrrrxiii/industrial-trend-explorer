@@ -15,7 +15,7 @@ export function AnomalyList({ readings, unit, normalMin, normalMax }: Props) {
     const anomalies = readings.filter(reading => reading.anomaly);
 
     return (
-        <section className="anomaly-panel" aria-labelledby="anomaly-list-heading">
+        <section className="panel anomaly-panel" aria-labelledby="anomaly-list-heading">
             <div className="insight-panel-heading">
                 <div>
                     <p className="section-kicker">Flagged by Java analytics</p>

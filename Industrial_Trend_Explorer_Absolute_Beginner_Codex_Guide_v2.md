@@ -868,6 +868,12 @@ from the browser. Documentation records only observed results. No Git commit
 was made because this workspace is not a Git repository. Preserve the Day 8
 scope lock and proceed one micro-step at a time so I can understand and verify
 each change.
+
+CSS readability follow-up: repeated panel appearance is shared through the
+`.panel` class, while component classes keep each panel's purpose-specific
+layout. Section comments explain the design tokens, responsive breakpoint,
+and accessibility rules. Recheck the screenshot and frontend tests after
+future style changes.
 ```
 
 If you understand only one principle this week, make it this: **you control the learning pace; Codex is your pair programmer and teacher, not the person who replaces your understanding.**

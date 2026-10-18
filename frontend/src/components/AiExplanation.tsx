@@ -23,7 +23,7 @@ export function AiExplanation({ sensorId }: Props) {
     }
 
     return (
-        <section className="ai-panel" aria-labelledby="ai-explanation-heading">
+        <section className="panel ai-panel" aria-labelledby="ai-explanation-heading">
             <div className="insight-panel-heading">
                 <div>
                     <p className="section-kicker">On-demand insight</p>

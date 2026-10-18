@@ -28,7 +28,7 @@ function formatMeasurement(value: number | null, unit: string, decimals?: number
 
 export function SummaryCards({ summary, unit }: Props) {
     return (
-        <section className="summary-section" aria-labelledby="summary-heading">
+        <section className="panel summary-section" aria-labelledby="summary-heading">
             <div className="summary-heading">
                 <p className="section-kicker">Current dataset</p>
                 <h2 id="summary-heading">Summary</h2>
