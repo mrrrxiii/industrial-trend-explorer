@@ -78,6 +78,7 @@ A real Gemini request was verified with HTTP `200` and a non-empty response. Mod
 | Backend tests | 13 passed |
 | Frontend tests | 14 passed |
 | Frontend lint and production build | Passed |
+| GitHub Actions CI | Separate Java 25 backend and Node 24 frontend jobs on pushes and pull requests |
 | Seeded API data | 2 sensors, 48 readings and 2 anomalies per sensor |
 | Time-range browser check | 1H, 6H, and 24H selection and updates checked with mocked API responses |
 | Time-range API smoke check | Updated backend returned 3, 13, and 48 readings for 1H, 6H, and 24H; `hours=2` returned HTTP 400 |
