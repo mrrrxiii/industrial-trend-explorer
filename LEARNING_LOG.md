@@ -12,3 +12,8 @@ export import
 how define type and function
 create dropdown list
 Sensor describes a sensor object at TypeScript build time, while Props describes the inputs passed to SensorDetails; and you verified that both sensor options appeared and npm --prefix frontend run build passed
+
+day 3;
+I learn react states and derived data
+demoData.ts through app to chart and summary
+verify the chart and summary data when selecting sensor

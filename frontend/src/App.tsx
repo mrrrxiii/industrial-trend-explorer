@@ -1,28 +1,34 @@
 import './App.css'
-import type { Sensor } from './types';
 import { SensorDetails } from './components/SensorDetails';
 import { sensors } from './demoData';
+import { useState } from 'react';
+import { SensorSelector } from './components/SensorSelector';
+import { createReadings } from './demoData';
+import { TrendChart } from './components/TrendChart';
+import { summarize } from './demoData';
+import { SummaryCards } from './components/SummaryCards';
 
-const sensor: Sensor = {
-  id: 'reactor-temp',
-  name: 'Reactor Temperature',
-  unit: '°C',
-  normalMin: 60,
-  normalMax: 80,
-};
+
 
 function App() {
+  const [selectedSensorId, setSelectedSensorId] = useState('reactor-temp');
+  const selectedSensor = sensors.find(sensor => sensor.id === selectedSensorId);
+  const readings = createReadings(selectedSensorId);
+  const summary = summarize(readings);
+
   return (
     <main>
       <h1>Industrial Trend Explorer</h1>
       <p>SIMULATED DATA — NOT LIVE INDUSTRIAL DATA</p>
-      <label htmlFor="sensor">Choose a sensor:</label>
-      <select id="sensor" defaultValue={sensors[0].id}>
-        {sensors.map(sensor => (
-          <option key={sensor.id} value={sensor.id}>{sensor.name}</option>
-        ))}
-      </select>
-      <SensorDetails sensor={sensor} />
+      <SensorSelector
+        sensors={sensors}
+        selectedId={selectedSensorId}
+        onChange={setSelectedSensorId}
+      />
+
+      {selectedSensor && <SensorDetails sensor={selectedSensor} />}
+      {selectedSensor && <TrendChart readings={readings} unit={selectedSensor.unit} />}
+      <SummaryCards summary={summary} />
     </main>
   );
 }
