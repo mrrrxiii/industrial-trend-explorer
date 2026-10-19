@@ -426,6 +426,8 @@ STOP.
 
 **Exit condition for Phase B:** A person outside your local network can open the public HTTPS URL cold, see useful data and use the existing controls; memory and error logs are acceptable. **This is the primary deliverable.**
 
+**Repeatable smoke test:** After a deployment, run `node scripts/production-smoke-test.mjs https://your-domain.example`. It checks the public site and read-only API behavior; use [the manual production smoke-test checklist](./production-smoke-checklist.md) for browser, mock-mode, persistence, and secret-exposure checks. The script does not restart containers or call the explanation endpoint.
+
 ---
 
 ### Phase C: Make updates safe and portfolio-ready
