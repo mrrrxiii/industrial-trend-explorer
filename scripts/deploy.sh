@@ -61,10 +61,11 @@ if ! awk -v version="$version" '
 fi
 chmod 600 "$staged_env_file"
 
-sudo -v || fail "Could not authenticate sudo; no containers were changed."
+sudo -n env APP_VERSION="$version" docker compose version >/dev/null \
+  || fail "Non-interactive sudo access to Docker Compose is unavailable; no containers were changed."
 
 compose() {
-  sudo env APP_VERSION="$version" docker compose \
+  sudo -n env APP_VERSION="$version" docker compose \
     --env-file "$staged_env_file" -f "$compose_file" "$@"
 }
 
