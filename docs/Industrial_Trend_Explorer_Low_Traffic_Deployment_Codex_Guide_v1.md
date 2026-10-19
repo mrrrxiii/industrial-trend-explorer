@@ -436,6 +436,8 @@ STOP.
 
 **Learn:** Git SHA image tags, deployment scripts, change control, rollback boundaries.
 
+**Repeatable procedure:** Use [the manual deployment and rollback runbook](./deployment-runbook.md). Its `scripts/deploy.sh <full-git-sha>` command pulls the matching prebuilt backend and frontend images, starts them without building, checks container/database readiness, and preserves all named volumes. Run the public smoke test from a trusted computer after deployment. Record the previous known-good SHA before each release; image rollback does not reverse database schema changes.
+
 **Codex prompt:**
 
 ```text
