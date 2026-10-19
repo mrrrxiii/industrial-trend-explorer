@@ -1,144 +1,86 @@
-# Industrial Trend Explorer
+<div align="center">
 
-**A full-stack sensor dashboard for exploring trends, anomaly readings, and on-demand explanations.**
+<h1>Industrial Trend Explorer</h1>
 
-**Keywords:** Java · Spring Boot · REST API · PostgreSQL · React · TypeScript · Recharts · Gemini API · LLM integration · data visualization
+<p>A sensor analytics dashboard for trends, anomalies, and clear explanations.</p>
 
-## Project author
+![Java 25](https://img.shields.io/badge/Java-25-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4-6DB33F?logo=springboot&logoColor=white)
+![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-Lightsail-232F3E?logo=amazonaws&logoColor=white)
 
-[GitHub: @mrrrxiii](https://github.com/mrrrxiii) · [LinkedIn](https://www.linkedin.com/in/leikong-ottawa/)
+[![Open the live demo](https://img.shields.io/badge/LIVE%20DEMO-Open%20Dashboard-0F6B78?style=for-the-badge)](https://industrial-trend-explorer.duckdns.org/)
 
-![Full-page screenshot of the Industrial Trend Explorer dashboard](docs/screenshots/dashboard-full-page.png)
+[GitHub](https://github.com/mrrrxiii/industrial-trend-explorer) · [LinkedIn](https://www.linkedin.com/in/leikong-ottawa/)
 
-*The dashboard uses synthetic sample data; it is not connected to live industrial equipment.*
+</div>
 
-## Overview
+![Industrial Trend Explorer dashboard](docs/screenshots/dashboard-full-page.png)
 
-Choose a sensor and time range to see its trend, normal operating range, summary statistics, and readings flagged as anomalies. Request an explanation only when needed.
+## Key Features
 
-- **Two sensors:** Reactor Temperature and Pump Pressure
-- **Analytics:** Java calculates summary statistics and flags anomalies
-- **Visualization:** React, TypeScript, and Recharts
-- **Storage and API:** PostgreSQL and Spring Boot REST endpoints
-- **Explanations:** Deterministic mock by default; optional Gemini integration
+- **Sensor Analytics** — explore Pump Pressure and Reactor Temperature.
+- **Time-Window Analysis** — select 1H, 6H, or 24H ranges.
+- **Anomaly Detection** — compare readings with configured normal ranges.
+- **Trend visualization** — Recharts with normal-range and anomaly indicators.
+- **REST API** — Spring Boot serves summaries and trends queried from PostgreSQL with JDBC and SQL.
 
-## How it works
+## Architecture
 
-**Dashboard → Spring Boot API → PostgreSQL**
+```mermaid
+flowchart LR
+  Browser["Browser: React + TypeScript"] -->|HTTPS| Caddy["Caddy: AWS Lightsail"]
+  Caddy -->|/api| API["Spring Boot: REST API"]
+  API -->|"JDBC / SQL"| DB[("PostgreSQL")]
 
-Java returns sensor readings and calculated summaries to the dashboard. The optional explanation request is sent only when a user clicks the button. The API key, when Gemini is enabled, stays on the backend.
-
-## Time-range analytics
-
-Choose **1H**, **6H**, or **24H**. The selected sensor's latest stored reading anchors the time window; its start and end are both included. Spring Boot accepts only those three values, PostgreSQL returns readings in the selected window, and Java recalculates the summary and anomalies before React updates the chart and table. The same range is used if the user requests an explanation.
-
-```text
-React selection → REST request (`hours`) → Spring Boot validation
-→ PostgreSQL time window → Java analytics → updated dashboard
+  subgraph Release["Build and release"]
+    Actions["GitHub Actions: CI"] --> GHCR["GHCR: SHA-tagged images"] --> Deploy["Manual Deployment"]
+  end
 ```
 
-The explanation service builds a prompt from the filtered Java results. The Gemini provider sends that prompt to the model; it does not calculate the range or analytics. Trend and explanation requests accept `hours=1`, `hours=6`, or `hours=24` (default `24`); unsupported ranges return HTTP 400.
+## Build and release
+
+- **CI:** GitHub Actions runs backend tests with Java 25 and frontend lint, tests, and production build with Node 24 on pushes and pull requests.
+- **Container images:** After both CI jobs succeed on a push to `master`, GitHub Actions publishes `linux/amd64` images to **GHCR**, tagged with the full commit SHA.
+- **Hosting:** **Docker Compose** runs Caddy, the Spring Boot API, and PostgreSQL on **AWS Lightsail**. Caddy provides **HTTPS** and routes `/api` to the API.
+- **Release:** **Manual Deployment** uses the verified SHA-tagged images; GitHub Actions does not deploy the application.
 
 ## Run locally
 
-Start PostgreSQL and load the sample data from the project root:
+Requires Docker Compose, Java 25, and Node.js 24.
 
-```bash
-docker compose up -d db
-docker compose exec -T db psql -U app -d industrial_trends < db/schema.sql
-docker compose exec -T db psql -U app -d industrial_trends < db/seed.sql
-```
+1. Start PostgreSQL:
 
-Start the backend in a separate terminal:
+   ```bash
+   docker compose up -d db
+   ```
 
-```bash
-cd backend
-./mvnw spring-boot:run
-```
+2. **First-time setup only:** initialize the schema and sample data for a new database volume. You do not need to rerun these commands each time you start the project.
 
-Start the frontend in another terminal at the project root:
+   ```bash
+   docker compose exec -T db psql -U app -d industrial_trends < db/schema.sql
+   docker compose exec -T db psql -U app -d industrial_trends < db/seed.sql
+   ```
 
-```bash
-npm --prefix frontend install
-npm --prefix frontend run dev
-```
+3. In a terminal, start the API:
 
-Open the Vite URL shown in the terminal, usually `http://localhost:5173`.
+   ```bash
+   cd backend
+   ./mvnw spring-boot:run
+   ```
 
-### Run the production-shaped stack locally
+4. In another terminal, install frontend dependencies and start the UI:
 
-Build the same backend and web images used by production, but tag them only for local testing:
+   ```bash
+   npm --prefix frontend ci
+   npm --prefix frontend run dev
+   ```
 
-```bash
-docker build --tag industrial-trend-api:local backend
-docker build --tag industrial-trend-web:local frontend
-```
-
-Start an isolated HTTP-only stack with unmistakably local credentials and mock explanations:
-
-```bash
-env \
-  APP_VERSION=local \
-  DB_PASSWORD=local_smoke_test_only_not_for_production \
-  SITE_DOMAIN=:80 \
-  LLM_MODE=mock \
-  docker compose \
-    --project-name industrial-trend-local-smoke \
-    --file compose.prod.yaml \
-    --file compose.local.yaml \
-    up --detach
-```
-
-Open `http://127.0.0.1:18080`. The fixed project name keeps its database and Caddy volumes separate from normal development.
-
-**Local smoke test verified (2026-10-18):** Caddy served `/` and both built assets with HTTP 200, forwarded `/api/sensors` to the backend, and returned 3, 13, and 48 readings for 1H, 6H, and 24H. An unsupported `hours=2` returned HTTP 400. The browser rendered the seeded chart and anomalies, and a click produced the `MOCK — NOT AI` label. The database container was healthy. This verifies the local HTTP/container path only; it does not verify public DNS, HTTPS, or capacity on a 2 GB Lightsail instance.
-
-After testing, remove only this explicitly disposable local stack and its synthetic data:
-
-```bash
-env \
-  APP_VERSION=local \
-  DB_PASSWORD=local_smoke_test_only_not_for_production \
-  SITE_DOMAIN=:80 \
-  LLM_MODE=mock \
-  docker compose \
-    --project-name industrial-trend-local-smoke \
-    --file compose.prod.yaml \
-    --file compose.local.yaml \
-    down --volumes
-```
-
-Do not use `down --volumes` for a real deployment.
-
-## Optional Gemini mode
-
-Mock mode is the default. For live explanations, configure `LLM_MODE=live`, `GOOGLE_API_KEY`, and `GEMINI_MODEL` in the **backend process environment only**. Never put the key in frontend code or commit it. The interface labels responses `MOCK — NOT AI` or `LIVE AI`.
-
-A real Gemini request was verified with HTTP `200` and a non-empty response. Model access and quotas can change; explanations are informational and are not operational guidance.
-
-## Verification
-
-| Check | Result |
-| --- | --- |
-| Backend tests | 13 passed |
-| Frontend tests | 14 passed |
-| Frontend lint and production build | Passed |
-| GitHub Actions CI | Separate Java 25 backend and Node 24 frontend jobs on pushes and pull requests |
-| Seeded API data | 2 sensors, 48 readings and 2 anomalies per sensor |
-| Time-range browser check | 1H, 6H, and 24H selection and updates checked with mocked API responses |
-| Time-range API smoke check | Updated backend returned 3, 13, and 48 readings for 1H, 6H, and 24H; `hours=2` returned HTTP 400 |
-| Responsive page | Checked at 375, 768, and 1280 pixels with no horizontal overflow |
-
-Run the checks with:
-
-```bash
-cd backend && ./mvnw test
-cd ..
-npm --prefix frontend run lint
-npm --prefix frontend test
-npm --prefix frontend run build
-```
+   Open the local URL printed by Vite. The development server proxies `/api` to the backend on port 8080.
 
 ## Scope
 
-This is a portfolio and learning demo built with synthetic data. It is not a production monitoring system, a safety system, or a connection to real sensors.
+Sensor readings are **synthetic**, and explanations use **mock AI output** by default (`MOCK — NOT AI`). This is a portfolio demo, not a live industrial monitoring or operational system.
