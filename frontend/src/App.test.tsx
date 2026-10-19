@@ -54,6 +54,23 @@ afterEach(() => {
   cleanup();
 });
 
+it('shows portfolio links below the simulated-data warning with safe new-tab attributes', () => {
+  render(<App />);
+
+  const linkedIn = screen.getByRole('link', { name: 'LinkedIn' });
+  const github = screen.getByRole('link', { name: 'GitHub' });
+
+  expect(linkedIn.getAttribute('href')).toBe('https://www.linkedin.com/in/leikong-ottawa/');
+  expect(linkedIn.getAttribute('target')).toBe('_blank');
+  expect(linkedIn.getAttribute('rel')).toBe('noopener noreferrer');
+  expect(github.getAttribute('href')).toBe('https://github.com/mrrrxiii/industrial-trend-explorer');
+  expect(github.getAttribute('target')).toBe('_blank');
+  expect(github.getAttribute('rel')).toBe('noopener noreferrer');
+  expect(screen.getByText('Simulated data — not live industrial data')).toBeTruthy();
+  expect(linkedIn.parentElement?.previousElementSibling?.textContent)
+    .toContain('Simulated data — not live industrial data');
+});
+
 it('clears the old trend and shows loading when the sensor changes', async () => {
   const user = userEvent.setup();
   vi.mocked(getTrend).mockImplementation(id => {

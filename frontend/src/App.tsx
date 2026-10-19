@@ -78,10 +78,28 @@ function App() {
             Explore sensor trends, anomalies, and grounded explanations.
           </p>
         </div>
-        <p className="data-notice">
-          <span aria-hidden="true">●</span>
-          Simulated data — not live industrial data
-        </p>
+        <div className="dashboard-header-meta">
+          <p className="data-notice">
+            <span aria-hidden="true">●</span>
+            Simulated data — not live industrial data
+          </p>
+          <nav className="portfolio-links" aria-label="Portfolio links">
+            <a
+              href="https://www.linkedin.com/in/leikong-ottawa/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              LinkedIn
+            </a>
+            <a
+              href="https://github.com/mrrrxiii/industrial-trend-explorer"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub
+            </a>
+          </nav>
+        </div>
       </header>
 
       <main className="dashboard-content">
