@@ -52,23 +52,7 @@ Every lab follows the same process:
 
 A successful build alone does **not** complete a lesson. You should also be able to reproduce the key idea without copying.
 
-### 1.2 A concrete learning log
-
-Create `docs/learning/FRONTEND_V2_LEARNING_LOG.md` on your learning branch. Add an entry after each lesson using this reusable form:
-
-```md
-### Lesson 04 — JavaScript arrays
-- Prediction:
-- Code I typed:
-- Actual output:
-- Why the output occurred:
-- Verification command and result:
-- One thing I still cannot explain:
-```
-
-The headings are a **template for your own observations**, not facts to prefill. Do not record a test as passed unless you ran it.
-
-### 1.3 Labels used throughout
+### 1.2 Labels used throughout
 
 - **Read:** inspect the named existing file. No change needed.
 - **Try:** code the exercise yourself before looking at hints.
@@ -78,7 +62,7 @@ The headings are a **template for your own observations**, not facts to prefill.
 
 The existing repository is the source of truth. If a later commit changes a function, package, file, or endpoint, inspect the current file before following this snapshot-specific instruction. Do not change production code simply to make the documentation look correct.
 
-### 1.4 Scope boundaries
+### 1.3 Scope boundaries
 
 **In the core path:** HTML, CSS, JavaScript, TypeScript, Node/npm/Vite, React components and hooks, controlled forms, HTTP/JSON, Spring Boot POST endpoint, response guards, browser debugging, Vitest/Testing Library, accessibility, basic production build.
 
@@ -749,7 +733,7 @@ App initially renders
 
 On selecting a new range, `App` clears old trend content, starts a new request, and uses `AbortController` to avoid showing a stale previous response. The trend's status is one of `loading`, `empty`, `error`, or `success`.
 
-**Try 12A: draw a state machine.** On paper or in your log, draw:
+**Try 12A: draw a state machine.** On paper or in a temporary note, draw:
 
 ```text
 initial loading -> sensors loaded -> trend loading -> success
@@ -836,7 +820,7 @@ Validation requirements:
 
 The repository's current Java package is `com.flyinnegg.industrialtrend.sensor` for this area. **Do not** create a second similarly named controller in a guessed package.
 
-**Try 13A: write the contract before code.** In the learning log, write out the request/response JSON for equality, a greater value, and an invalid missing field.
+**Try 13A: write the contract before code.** Before coding, write out the request/response JSON for equality, a greater value, and an invalid missing field.
 
 **Try 13B: implement a separate controller.** Create:
 
